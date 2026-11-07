@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, createRoute, createRouter } from '@tanstack/react-router';
 import { z } from 'zod';
+import { RecordsPage } from './routes/records';
 import { ReviewPage } from './routes/review';
 import { RootLayout } from './routes/root';
 import { SearchPage } from './routes/search';
@@ -29,13 +30,20 @@ export const verifyRoute = createRoute({
   component: VerifyPage,
 });
 
+export const recordsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/records',
+  validateSearch: z.object({ season: z.uuid().optional().catch(undefined) }),
+  component: RecordsPage,
+});
+
 export const reviewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/review',
   component: ReviewPage,
 });
 
-const routeTree = rootRoute.addChildren([searchRoute, verifyRoute, reviewRoute]);
+const routeTree = rootRoute.addChildren([searchRoute, verifyRoute, recordsRoute, reviewRoute]);
 
 export function createAppRouter(queryClient: QueryClient) {
   return createRouter({ routeTree, context: { queryClient }, defaultPreload: 'intent' });

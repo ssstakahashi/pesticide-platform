@@ -406,6 +406,94 @@ export const CollectionStatsSchema = z
   })
   .openapi('CollectionStats');
 
+// ---- 利用者の散布記録（匿名ログインを含む） ----
+
+const optionalText = (max: number) => z.string().trim().max(max).nullish();
+
+export const MeSchema = z
+  .object({
+    uid: z.string(),
+    isAnonymous: z.boolean(),
+    email: z.string().nullable(),
+    seasonCount: z.number().int(),
+    recordCount: z.number().int(),
+  })
+  .openapi('Me');
+
+export const IdParamsSchema = z.object({
+  id: z.uuid('IDの形式が不正です').openapi({ param: { name: 'id', in: 'path' } }),
+});
+
+export const CropSeasonInputSchema = z
+  .object({
+    name: z.string().trim().min(1, '作付け名を入力してください').max(100).openapi({ example: 'A圃場 すいか 2026春' }),
+    fieldName: optionalText(100).openapi({ example: 'A圃場' }),
+    cropName: z.string().trim().min(1, '作物名を入力してください').max(100).openapi({ example: 'すいか' }),
+    startedOn: z.iso.date().nullish().openapi({ example: '2026-03-01' }),
+    endedOn: z.iso.date().nullish(),
+  })
+  .openapi('CropSeasonInput');
+
+export const CropSeasonSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    fieldName: z.string().nullable(),
+    cropName: z.string(),
+    startedOn: z.string().nullable(),
+    endedOn: z.string().nullable(),
+    recordCount: z.number().int(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .openapi('CropSeason');
+
+export const CropSeasonListResponseSchema = z
+  .object({ items: z.array(CropSeasonSchema) })
+  .openapi('CropSeasonListResponse');
+
+export const SprayRecordInputSchema = z
+  .object({
+    registrationNumber: RegistrationNumberSchema,
+    sprayedDate: z.iso.date().openapi({ example: '2026-04-10' }),
+    dilution: optionalText(50).openapi({ example: '1000倍' }),
+    amount: optionalText(50).openapi({ example: '200L/10a' }),
+    note: optionalText(1000),
+  })
+  .openapi('SprayRecordInput');
+
+export const SprayRecordCreateRequestSchema = z
+  .object({ records: z.array(SprayRecordInputSchema).min(1).max(500) })
+  .openapi('SprayRecordCreateRequest');
+
+export const SprayRecordSchema = z
+  .object({
+    id: z.string(),
+    seasonId: z.string(),
+    registrationNumber: z.string(),
+    pesticideName: z.string().nullable(),
+    sprayedDate: z.string(),
+    dilution: z.string().nullable(),
+    amount: z.string().nullable(),
+    note: z.string().nullable(),
+    createdAt: z.string(),
+  })
+  .openapi('SprayRecord');
+
+export const SprayRecordListResponseSchema = z
+  .object({ items: z.array(SprayRecordSchema) })
+  .openapi('SprayRecordListResponse');
+
+export const SeasonVerifyRequestSchema = VerifyRequestSchema.pick({ candidates: true }).openapi('SeasonVerifyRequest');
+
+export const MergeAccountRequestSchema = z
+  .object({
+    anonymousIdToken: z.string().min(1).openapi({ description: '引き継ぎ元の匿名ユーザーの Firebase ID トークン' }),
+  })
+  .openapi('MergeAccountRequest');
+
+export const MergeAccountResponseSchema = z.object({ movedSeasons: z.number().int() }).openapi('MergeAccountResponse');
+
 export type PesticideSearchQuery = z.infer<typeof PesticideSearchQuerySchema>;
 export type PesticideSearchResult = z.infer<typeof PesticideSearchResultSchema>;
 export type PesticideSearchResponse = z.infer<typeof PesticideSearchResponseSchema>;
@@ -424,3 +512,8 @@ export type PesticideAssets = z.infer<typeof PesticideAssetsSchema>;
 export type ReviewItem = z.infer<typeof ReviewItemSchema>;
 export type VerificationDetails = z.infer<typeof VerificationDetailsSchema>;
 export type CollectionStats = z.infer<typeof CollectionStatsSchema>;
+export type Me = z.infer<typeof MeSchema>;
+export type CropSeasonInput = z.infer<typeof CropSeasonInputSchema>;
+export type CropSeason = z.infer<typeof CropSeasonSchema>;
+export type SprayRecordInput = z.infer<typeof SprayRecordInputSchema>;
+export type SprayRecord = z.infer<typeof SprayRecordSchema>;

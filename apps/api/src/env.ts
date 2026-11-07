@@ -22,6 +22,7 @@ const EnvSchema = z
     AUTH_MODE: z.enum(['required', 'disabled']).default('required'),
     API_KEYS: csv,
     FIREBASE_PROJECT_ID: z.string().optional(),
+    ADMIN_UIDS: csv,
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(120),
     STORAGE_DIR: z.string().min(1).optional(),
     FILE_URL_SECRET: z.string().min(32, 'FILE_URL_SECRET は32文字以上にしてください').optional(),

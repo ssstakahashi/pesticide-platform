@@ -81,7 +81,7 @@ export function SuggestInput({ kind, value, onChange, placeholder, id }: Props) 
               key={item.id}
               role="option"
               aria-selected={i === active}
-              className={cn('cursor-pointer rounded-sm px-2 py-1.5 text-sm', i === active && 'bg-accent')}
+              className={cn('cursor-pointer rounded-sm px-2 py-1.5 text-sm hover:bg-neutral-200', i === active && 'bg-neutral-200')}
               onMouseDown={(e) => {
                 e.preventDefault();
                 select(item.name);

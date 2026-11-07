@@ -13,7 +13,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx scripts/seed.ts",
-    "famic:sync": "tsx scripts/famic-sync.ts"
+    "famic:sync": "tsx scripts/famic-sync.ts",
+    "users:cleanup": "tsx scripts/cleanup-anonymous-users.ts"
   },
   "dependencies": {
     "adm-zip": "^0.6.1",

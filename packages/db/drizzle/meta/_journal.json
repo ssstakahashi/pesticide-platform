@@ -43,6 +43,13 @@
       "when": 1794015826908,
       "tag": "0005_page_finder_checked_at",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794030724104,
+      "tag": "0006_user_records",
+      "breakpoints": true
     }
   ]
 }

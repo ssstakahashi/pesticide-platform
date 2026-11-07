@@ -12,6 +12,7 @@ const app = createApp({
     CORS_ORIGINS: [],
     AUTH_MODE: 'disabled',
     API_KEYS: [],
+    ADMIN_UIDS: [],
     RATE_LIMIT_PER_MINUTE: 1,
     FILE_URL_TTL_SECONDS: 3600,
   },

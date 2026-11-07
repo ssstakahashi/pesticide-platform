@@ -41,6 +41,10 @@ pnpm dev                      # web: http://localhost:5173 / api: http://localho
 - `/api/admin/collection/*` … 収集データのレビュー・候補URL登録・巡回の優先実行・公式ドメイン設定・集計（要 Bearer 認証）
 - `GET /api/admin/collection/unverified?limit=20` … 公式ページが無く探索も未了の農薬を登録番号順に最大20件（要 Bearer 認証）
 - `POST /api/admin/collection/unverified/checked` … 候補URLが無かった農薬を探索済みにし、次回の未検証一覧から外す（要 Bearer 認証）
+- `GET /api/me` … ログイン中の利用者（匿名を含む）と記録件数（Firebase の ID トークンが必要）
+- `/api/me/seasons`・`/api/me/seasons/{id}/records`・`/api/me/records/{id}` … 作付けと散布記録の CRUD
+- `POST /api/me/seasons/{id}/verify` … 保存済みの散布記録から残り使用回数を判定
+- `POST /api/me/merge` … 匿名ユーザーの記録を、ログインした既存アカウントへ移す
 - `GET /doc` … OpenAPI 3.1 JSON / `GET /ui` … Swagger UI
 
 ### 呼び出し方
@@ -53,6 +57,19 @@ pnpm dev                      # web: http://localhost:5173 / api: http://localho
 
 `POST /api/verify` と `/api/admin/*` は `Authorization: Bearer <token>` が必要です。トークンは `API_KEYS`（システム間連携用）か、
 Firebase Auth の ID トークン（`FIREBASE_PROJECT_ID` を設定）で検証します。`AUTH_MODE=disabled` はローカル開発専用です。
+
+- `/api/admin/*` は APIキーか、`ADMIN_UIDS` に含まれる登録済みの Firebase ユーザーだけが使えます（匿名ログインは不可）
+- `/api/me/*` は Firebase のユーザー（匿名を含む）だけが使えます。`AUTH_MODE=disabled` のときは固定の `dev-user` として動きます
+
+### 匿名ログインと散布記録
+
+Web は初回アクセス時に Firebase の匿名ログインを行い、登録しなくても散布記録を保存できます。
+Google またはメールアドレスで登録すると、同じ uid のまま記録が引き継がれます。既存アカウントにログインした場合は `POST /api/me/merge` で記録を移します。
+
+- Firebase コンソール > Authentication > ログイン方法 で「匿名」「Google」「メール/パスワード」を有効にする
+- Authentication > 設定 > 承認済みドメイン に Hosting のドメインを追加する
+- Web の `.env`（本番は `.env.production`）に `VITE_FIREBASE_*` を設定する。未設定ならログインせずに動く
+- `pnpm users:cleanup -- [--days 90] [--dry-run]` … 最終利用から一定日数たち、記録の無い匿名ユーザーを `app_users` から削除する（Firebase 側の匿名アカウントは残る）
 
 ## FAMIC データ同期
 

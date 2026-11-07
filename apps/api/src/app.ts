@@ -6,11 +6,12 @@ import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import type { Env } from './env';
-import { bearerAuth } from './middleware/auth';
+import { bearerAuth, requireAdmin, requireUser, verifyFirebaseToken, type UserVariables } from './middleware/auth';
 import { rateLimit } from './middleware/rate-limit';
 import { createRouter } from './router';
 import { collectionAdminRoutes } from './routes/admin';
 import { filesRoutes } from './routes/files';
+import { meRoutes } from './routes/me';
 import { cropsRoutes, pestsRoutes } from './routes/masters';
 import { pesticidesRoutes } from './routes/pesticides';
 import { verifyRoutes } from './routes/verify';
@@ -30,7 +31,7 @@ export function createApp({ db, env }: { db: Database; env: Env }) {
     '/api/*',
     cors({
       origin: env.CORS_ORIGINS,
-      allowMethods: ['GET', 'POST', 'PUT', 'OPTIONS'],
+      allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowHeaders: ['Content-Type', 'Authorization'],
       maxAge: 600,
     }),
@@ -43,9 +44,20 @@ export function createApp({ db, env }: { db: Database; env: Env }) {
   app.use('/api/files/*', searchLimiter);
   app.use('/api/verify/*', bearerAuth(env));
   app.use('/api/verify', bearerAuth(env));
-  app.use('/api/admin/*', bearerAuth(env));
+  app.use('/api/admin/*', bearerAuth(env), requireAdmin(env));
+  app.use(
+    '/api/me/*',
+    bearerAuth(env),
+    requireUser(),
+    rateLimit<{ Variables: UserVariables }>({
+      limit: env.RATE_LIMIT_PER_MINUTE,
+      key: (c) => c.get('principal').uid,
+    }),
+  );
+  app.use('/api/me', bearerAuth(env), requireUser());
 
   const signer = createFileUrlSigner(env);
+  const firebaseProjectId = env.FIREBASE_PROJECT_ID;
 
   app.openAPIRegistry.registerComponent('securitySchemes', BEARER_SECURITY_SCHEME, {
     type: 'http',
@@ -60,7 +72,11 @@ export function createApp({ db, env }: { db: Database; env: Env }) {
     .route('/api/pests', pestsRoutes(db))
     .route('/api/verify', verifyRoutes(db))
     .route('/api/files', filesRoutes(db, signer, env.STORAGE_DIR))
-    .route('/api/admin/collection', collectionAdminRoutes(db, signer));
+    .route('/api/admin/collection', collectionAdminRoutes(db, signer))
+    .route(
+      '/api/me',
+      meRoutes(db, firebaseProjectId ? (token) => verifyFirebaseToken(token, firebaseProjectId) : null),
+    );
 
   app.doc31('/doc', {
     openapi: '3.1.0',

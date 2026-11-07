@@ -1,6 +1,6 @@
 {
   "name": "pesticide-platform",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.28.10",
@@ -15,6 +15,7 @@
     "db:migrate": "pnpm --filter @pesticide/db db:migrate",
     "db:seed": "pnpm --filter @pesticide/db db:seed",
     "famic:sync": "pnpm --filter @pesticide/db famic:sync",
+    "users:cleanup": "pnpm --filter @pesticide/db users:cleanup",
     "collect": "pnpm --filter @pesticide/collector collect",
     "format": "prettier --write .",
     "deploy": "bash scripts/deploy.sh",

@@ -18,6 +18,7 @@ export function SearchPage() {
   const [crop, setCrop] = useState(search.crop ?? '');
   const [pest, setPest] = useState(search.pest ?? '');
   const [category, setCategory] = useState(search.category ?? '');
+  const [cropError, setCropError] = useState('');
 
   useEffect(() => {
     setCrop(search.crop ?? '');
@@ -33,9 +34,15 @@ export function SearchPage() {
         className="grid gap-4 md:grid-cols-[1fr_1fr_200px_auto] md:items-end"
         onSubmit={(e) => {
           e.preventDefault();
+          const trimmedCrop = crop.trim();
+          if (!trimmedCrop) {
+            setCropError('作物名を入力してください。');
+            return;
+          }
+          setCropError('');
           void navigate({
             search: {
-              crop: crop.trim() || undefined,
+              crop: trimmedCrop,
               pest: pest.trim() || undefined,
               category: category || undefined,
             },
@@ -44,7 +51,16 @@ export function SearchPage() {
       >
         <div className="flex flex-col gap-2">
           <Label htmlFor="crop">作物名（必須）</Label>
-          <SuggestInput id="crop" kind="crops" value={crop} onChange={setCrop} placeholder="例: すいか" />
+          <SuggestInput
+            id="crop"
+            kind="crops"
+            value={crop}
+            onChange={(value) => {
+              setCrop(value);
+              if (value.trim()) setCropError('');
+            }}
+            placeholder="例: すいか"
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="pest">病害虫・雑草</Label>
@@ -66,12 +82,17 @@ export function SearchPage() {
             ))}
           </select>
         </div>
-        <Button type="submit" disabled={!crop.trim()}>
+        <Button type="submit">
           {isFetching ? <Loader2 className="animate-spin" /> : <Search />}
           検索
         </Button>
       </form>
 
+      {cropError && (
+        <p className="text-destructive text-sm" role="alert">
+          {cropError}
+        </p>
+      )}
       {error && <p className="text-destructive text-sm">{error.message}</p>}
       {!search.crop && (
         <p className="text-muted-foreground text-sm">

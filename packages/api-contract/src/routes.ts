@@ -25,6 +25,16 @@ import {
   SuggestResponseSchema,
   VerifyRequestSchema,
   VerifyResponseSchema,
+  CropSeasonInputSchema,
+  CropSeasonListResponseSchema,
+  CropSeasonSchema,
+  IdParamsSchema,
+  MeSchema,
+  MergeAccountRequestSchema,
+  MergeAccountResponseSchema,
+  SeasonVerifyRequestSchema,
+  SprayRecordCreateRequestSchema,
+  SprayRecordListResponseSchema,
 } from './schemas';
 
 const json = <T>(schema: T, description: string) => ({
@@ -132,6 +142,7 @@ const adminSecurity = [{ [BEARER_SECURITY_SCHEME]: [] }];
 const adminErrors = {
   400: json(ErrorSchema, '入力エラー'),
   401: json(ErrorSchema, '認証エラー'),
+  403: json(ErrorSchema, '権限エラー'),
 };
 
 export const listReviewItemsRoute = createRoute({
@@ -233,7 +244,11 @@ export const getCollectionStatsRoute = createRoute({
   tags: ['admin'],
   summary: '収集状況の集計',
   security: adminSecurity,
-  responses: { 200: json(CollectionStatsSchema, '集計'), 401: json(ErrorSchema, '認証エラー') },
+  responses: {
+    200: json(CollectionStatsSchema, '集計'),
+    401: json(ErrorSchema, '認証エラー'),
+    403: json(ErrorSchema, '権限エラー'),
+  },
 });
 
 export const verifyRoute = createRoute({
@@ -250,4 +265,128 @@ export const verifyRoute = createRoute({
     400: json(ErrorSchema, '入力エラー'),
     401: json(ErrorSchema, '認証エラー'),
   },
+});
+
+const userSecurity = [{ [BEARER_SECURITY_SCHEME]: [] }];
+const userErrors = {
+  400: json(ErrorSchema, '入力エラー'),
+  401: json(ErrorSchema, '認証エラー'),
+  403: json(ErrorSchema, 'Firebase のユーザーではない'),
+};
+const jsonBody = <T>(schema: T) => ({ body: { content: { 'application/json': { schema } }, required: true } });
+
+export const getMeRoute = createRoute({
+  method: 'get',
+  path: '/',
+  tags: ['me'],
+  summary: 'ログイン中の利用者（匿名を含む）を登録・更新し、記録件数を返す',
+  security: userSecurity,
+  responses: { 200: json(MeSchema, '利用者'), ...userErrors },
+});
+
+export const listSeasonsRoute = createRoute({
+  method: 'get',
+  path: '/seasons',
+  tags: ['me'],
+  summary: '作付けの一覧（作期の新しい順）',
+  security: userSecurity,
+  responses: { 200: json(CropSeasonListResponseSchema, '作付け一覧'), ...userErrors },
+});
+
+export const createSeasonRoute = createRoute({
+  method: 'post',
+  path: '/seasons',
+  tags: ['me'],
+  summary: '作付けを作成',
+  security: userSecurity,
+  request: jsonBody(CropSeasonInputSchema),
+  responses: { 200: json(CropSeasonSchema, '作成した作付け'), ...userErrors },
+});
+
+export const updateSeasonRoute = createRoute({
+  method: 'put',
+  path: '/seasons/{id}',
+  tags: ['me'],
+  summary: '作付けを更新',
+  security: userSecurity,
+  request: { params: IdParamsSchema, ...jsonBody(CropSeasonInputSchema) },
+  responses: { 200: json(CropSeasonSchema, '更新した作付け'), ...userErrors, 404: json(ErrorSchema, '該当なし') },
+});
+
+export const deleteSeasonRoute = createRoute({
+  method: 'delete',
+  path: '/seasons/{id}',
+  tags: ['me'],
+  summary: '作付けと、その散布記録を削除',
+  security: userSecurity,
+  request: { params: IdParamsSchema },
+  responses: {
+    200: json(z.object({ id: z.string(), deleted: z.literal(true) }), '削除結果'),
+    ...userErrors,
+    404: json(ErrorSchema, '該当なし'),
+  },
+});
+
+export const listRecordsRoute = createRoute({
+  method: 'get',
+  path: '/seasons/{id}/records',
+  tags: ['me'],
+  summary: '作付けの散布記録（散布日の古い順）',
+  security: userSecurity,
+  request: { params: IdParamsSchema },
+  responses: {
+    200: json(SprayRecordListResponseSchema, '散布記録'),
+    ...userErrors,
+    404: json(ErrorSchema, '該当なし'),
+  },
+});
+
+export const createRecordsRoute = createRoute({
+  method: 'post',
+  path: '/seasons/{id}/records',
+  tags: ['me'],
+  summary: '作付けに散布記録を追加（複数件まとめて登録できる）',
+  security: userSecurity,
+  request: { params: IdParamsSchema, ...jsonBody(SprayRecordCreateRequestSchema) },
+  responses: {
+    200: json(SprayRecordListResponseSchema, '追加した散布記録'),
+    ...userErrors,
+    404: json(ErrorSchema, '該当なし'),
+  },
+});
+
+export const deleteRecordRoute = createRoute({
+  method: 'delete',
+  path: '/records/{id}',
+  tags: ['me'],
+  summary: '散布記録を削除',
+  security: userSecurity,
+  request: { params: IdParamsSchema },
+  responses: {
+    200: json(z.object({ id: z.string(), deleted: z.literal(true) }), '削除結果'),
+    ...userErrors,
+    404: json(ErrorSchema, '該当なし'),
+  },
+});
+
+export const verifySeasonRoute = createRoute({
+  method: 'post',
+  path: '/seasons/{id}/verify',
+  tags: ['me'],
+  summary: '保存済みの散布記録から残り使用回数を判定',
+  security: userSecurity,
+  request: { params: IdParamsSchema, ...jsonBody(SeasonVerifyRequestSchema) },
+  responses: { 200: json(VerifyResponseSchema, '判定結果'), ...userErrors, 404: json(ErrorSchema, '該当なし') },
+});
+
+export const mergeAccountRoute = createRoute({
+  method: 'post',
+  path: '/merge',
+  tags: ['me'],
+  summary: '匿名ユーザーの記録を、ログイン中の登録済みアカウントに移す',
+  description:
+    '匿名ユーザーが既存アカウントにひも付けられなかった（credential-already-in-use）ときに使う。登録済みのアカウントでのみ呼び出せる。',
+  security: userSecurity,
+  request: jsonBody(MergeAccountRequestSchema),
+  responses: { 200: json(MergeAccountResponseSchema, '移した作付けの件数'), ...userErrors },
 });

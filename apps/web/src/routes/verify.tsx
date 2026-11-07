@@ -1,13 +1,18 @@
-import { useMutation } from '@tanstack/react-query';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import type { VerifyPesticideResult, VerifyStatus } from '@pesticide/api-contract';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Check, Loader2, Plus, Save, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { VerifyPesticideResult, VerifyResponse, VerifyStatus } from '@pesticide/api-contract';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAuth } from '@/features/auth/auth-provider';
+import { useOpenLinkDialog } from '@/features/auth/link-dialog';
+import { useCreateRecords, useCreateSeason, useDeleteRecord } from '@/features/records/mutations';
+import { recordsQuery, seasonsQuery } from '@/features/records/queries';
+import { SeasonForm } from '@/features/records/season-form';
 import { SuggestInput } from '@/features/search/suggest-input';
 import { api, unwrap } from '@/lib/api';
 
@@ -27,7 +32,8 @@ function StatusBadge({ status }: { status: VerifyStatus }) {
   return <Badge variant={variant}>{label}</Badge>;
 }
 
-type HistoryRow = { key: number; registrationNumber: string; sprayedDate: string };
+/** savedId があるのは選択中の作付けに保存済みの行 */
+type HistoryRow = { key: number; registrationNumber: string; sprayedDate: string; savedId?: string };
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -35,6 +41,66 @@ export function VerifyPage() {
   const [crop, setCrop] = useState('');
   const [history, setHistory] = useState<HistoryRow[]>([{ key: 0, registrationNumber: '', sprayedDate: today() }]);
   const [candidates, setCandidates] = useState('');
+  const [seasonId, setSeasonId] = useState('');
+  const [showSeasonForm, setShowSeasonForm] = useState(false);
+  const [savedMessage, setSavedMessage] = useState<string | null>(null);
+
+  const { ready, isAnonymous } = useAuth();
+  const openLinkDialog = useOpenLinkDialog();
+  const seasons = useQuery(seasonsQuery(ready));
+  const savedRecords = useQuery(recordsQuery(seasonId || undefined));
+  const createSeason = useCreateSeason();
+  const createRecords = useCreateRecords();
+  const deleteRecord = useDeleteRecord();
+
+  useEffect(() => {
+    if (!seasonId || !savedRecords.data) return;
+    setHistory((rows) => [
+      ...savedRecords.data.map((r, i) => ({
+        key: -1 - i,
+        registrationNumber: r.registrationNumber,
+        sprayedDate: r.sprayedDate,
+        savedId: r.id,
+      })),
+      ...rows.filter((r) => !r.savedId),
+    ]);
+  }, [seasonId, savedRecords.data]);
+
+  const selectSeason = (id: string) => {
+    setSeasonId(id);
+    setSavedMessage(null);
+    setShowSeasonForm(false);
+    const season = seasons.data?.find((s) => s.id === id);
+    if (season) setCrop(season.cropName);
+    setHistory((rows) => {
+      const unsaved = rows.filter((r) => !r.savedId);
+      return unsaved.length ? unsaved : [{ key: 0, registrationNumber: '', sprayedDate: today() }];
+    });
+  };
+
+  const unsavedRows = history.filter((h) => !h.savedId && h.registrationNumber.trim());
+
+  const saveTo = async (targetSeasonId: string) => {
+    await createRecords.mutateAsync({
+      seasonId: targetSeasonId,
+      records: unsavedRows.map((r) => ({
+        registrationNumber: r.registrationNumber.trim(),
+        sprayedDate: r.sprayedDate,
+      })),
+    });
+    setHistory((rows) => rows.filter((r) => r.savedId));
+    setSeasonId(targetSeasonId);
+    setShowSeasonForm(false);
+    setSavedMessage(`${unsavedRows.length}件の散布記録を保存しました`);
+  };
+
+  const removeRow = (row: HistoryRow) => {
+    if (row.savedId) {
+      if (!window.confirm('保存済みの散布記録を削除しますか？')) return;
+      deleteRecord.mutate(row.savedId);
+    }
+    setHistory((rows) => rows.filter((r) => r.key !== row.key));
+  };
 
   const verify = useMutation({
     mutationFn: async () =>
@@ -78,6 +144,23 @@ export function VerifyPage() {
             }}
           >
             <div className="flex flex-col gap-2">
+              <Label htmlFor="verify-season">作付け（保存先）</Label>
+              <select
+                id="verify-season"
+                className="border-input h-9 rounded-md border bg-transparent px-3 text-base shadow-xs md:text-sm"
+                value={seasonId}
+                disabled={!ready}
+                onChange={(e) => selectSeason(e.target.value)}
+              >
+                <option value="">保存しない（この場だけ）</option>
+                {seasons.data?.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}（{s.recordCount}件）
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
               <Label htmlFor="verify-crop">作物名</Label>
               <SuggestInput id="verify-crop" kind="crops" value={crop} onChange={setCrop} placeholder="例: すいか" />
             </div>
@@ -90,20 +173,17 @@ export function VerifyPage() {
                     inputMode="numeric"
                     placeholder="登録番号"
                     value={row.registrationNumber}
+                    readOnly={Boolean(row.savedId)}
+                    title={row.savedId ? '保存済み' : undefined}
                     onChange={(e) => updateRow(row.key, { registrationNumber: e.target.value })}
                   />
                   <Input
                     type="date"
                     value={row.sprayedDate}
+                    readOnly={Boolean(row.savedId)}
                     onChange={(e) => updateRow(row.key, { sprayedDate: e.target.value })}
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    aria-label="削除"
-                    onClick={() => setHistory((rows) => rows.filter((r) => r.key !== row.key))}
-                  >
+                  <Button type="button" variant="ghost" size="icon" aria-label="削除" onClick={() => removeRow(row)}>
                     <Trash2 />
                   </Button>
                 </div>
@@ -137,24 +217,74 @@ export function VerifyPage() {
               残り使用回数をチェック
             </Button>
             {verify.error && <p className="text-destructive text-sm">{verify.error.message}</p>}
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!ready || unsavedRows.length === 0 || createRecords.isPending}
+              onClick={() => {
+                setSavedMessage(null);
+                if (seasonId) void saveTo(seasonId);
+                else setShowSeasonForm(true);
+              }}
+            >
+              {createRecords.isPending ? <Loader2 className="animate-spin" /> : <Save />}
+              この履歴を保存
+            </Button>
+            {createRecords.error && <p className="text-destructive text-sm">{createRecords.error.message}</p>}
+            {savedMessage && (
+              <p className="text-sm text-emerald-700">
+                <Check className="mr-1 inline size-4" />
+                {savedMessage}
+                {isAnonymous && (
+                  <>
+                    （この端末のみ）・別の端末でも見るには{' '}
+                    <button type="button" className="underline underline-offset-2" onClick={openLinkDialog}>
+                      登録する
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
           </form>
+          {showSeasonForm && (
+            <div className="mt-4 flex flex-col gap-3 border-t pt-4">
+              <p className="text-sm font-medium">保存先の作付けを作成</p>
+              <SeasonForm
+                initial={{ cropName: crop.trim() }}
+                submitLabel="作成して保存"
+                pending={createSeason.isPending || createRecords.isPending}
+                error={createSeason.error?.message}
+                onCancel={() => setShowSeasonForm(false)}
+                onSubmit={async (input) => {
+                  const season = await createSeason.mutateAsync(input);
+                  setCrop(season.cropName);
+                  await saveTo(season.id);
+                }}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      <div className="flex flex-col gap-4">
-        {verify.data?.unknownRegistrationNumbers.length ? (
-          <p className="text-sm text-amber-700">
-            登録情報が見つからない登録番号があります: {verify.data.unknownRegistrationNumbers.join('、')}
-          </p>
-        ) : null}
-        {verify.data && verify.data.items.length === 0 && (
-          <p className="text-muted-foreground text-sm">該当する農薬はありません。</p>
-        )}
-        {verify.data?.items.map((item) => (
-          <VerifyResultCard key={item.registrationNumber} item={item} />
-        ))}
-      </div>
+      <div className="flex flex-col gap-4">{verify.data && <VerifyResults data={verify.data} />}</div>
     </div>
+  );
+}
+
+/** 判定結果の一覧（散布記録ページからも使う） */
+export function VerifyResults({ data }: { data: VerifyResponse }) {
+  return (
+    <>
+      {data.unknownRegistrationNumbers.length ? (
+        <p className="text-sm text-amber-700">
+          登録情報が見つからない登録番号があります: {data.unknownRegistrationNumbers.join('、')}
+        </p>
+      ) : null}
+      {data.items.length === 0 && <p className="text-muted-foreground text-sm">該当する農薬はありません。</p>}
+      {data.items.map((item) => (
+        <VerifyResultCard key={item.registrationNumber} item={item} />
+      ))}
+    </>
   );
 }
 

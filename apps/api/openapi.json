@@ -1150,6 +1150,312 @@
         "required": [
           "registrationNumber"
         ]
+      },
+      "Me": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "isAnonymous": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "seasonCount": {
+            "type": "integer"
+          },
+          "recordCount": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "uid",
+          "isAnonymous",
+          "email",
+          "seasonCount",
+          "recordCount"
+        ]
+      },
+      "CropSeasonListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CropSeason"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CropSeason": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fieldName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cropName": {
+            "type": "string"
+          },
+          "startedOn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "endedOn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recordCount": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "fieldName",
+          "cropName",
+          "startedOn",
+          "endedOn",
+          "recordCount",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CropSeasonInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "A圃場 すいか 2026春"
+          },
+          "fieldName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100,
+            "example": "A圃場"
+          },
+          "cropName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "すいか"
+          },
+          "startedOn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2026-03-01"
+          },
+          "endedOn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          }
+        },
+        "required": [
+          "name",
+          "cropName"
+        ]
+      },
+      "SprayRecordListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SprayRecord"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "SprayRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "seasonId": {
+            "type": "string"
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "pesticideName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sprayedDate": {
+            "type": "string"
+          },
+          "dilution": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "seasonId",
+          "registrationNumber",
+          "pesticideName",
+          "sprayedDate",
+          "dilution",
+          "amount",
+          "note",
+          "createdAt"
+        ]
+      },
+      "SprayRecordCreateRequest": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SprayRecordInput"
+            },
+            "minItems": 1,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "records"
+        ]
+      },
+      "SprayRecordInput": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string",
+            "pattern": "^\\d{1,10}$",
+            "example": "22583"
+          },
+          "sprayedDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-04-10"
+          },
+          "dilution": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 50,
+            "example": "1000倍"
+          },
+          "amount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 50,
+            "example": "200L/10a"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "registrationNumber",
+          "sprayedDate"
+        ]
+      },
+      "SeasonVerifyRequest": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^\\d{1,10}$",
+              "example": "22583"
+            },
+            "maxItems": 200,
+            "description": "次に使用を検討している農薬の登録番号。省略時は、作物に登録があり履歴と同じ成分または同じ製品を含む農薬を返す"
+          }
+        }
+      },
+      "MergeAccountResponse": {
+        "type": "object",
+        "properties": {
+          "movedSeasons": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "movedSeasons"
+        ]
+      },
+      "MergeAccountRequest": {
+        "type": "object",
+        "properties": {
+          "anonymousIdToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "引き継ぎ元の匿名ユーザーの Firebase ID トークン"
+          }
+        },
+        "required": [
+          "anonymousIdToken"
+        ]
       }
     },
     "parameters": {}
@@ -1716,6 +2022,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "権限エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       },
@@ -1762,6 +2078,16 @@
           },
           "401": {
             "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "権限エラー",
             "content": {
               "application/json": {
                 "schema": {
@@ -1835,6 +2161,16 @@
           },
           "401": {
             "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "権限エラー",
             "content": {
               "application/json": {
                 "schema": {
@@ -1923,6 +2259,16 @@
               }
             }
           },
+          "403": {
+            "description": "権限エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "該当なし",
             "content": {
@@ -1987,6 +2333,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "権限エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -2015,6 +2371,16 @@
           },
           "401": {
             "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "権限エラー",
             "content": {
               "application/json": {
                 "schema": {
@@ -2083,6 +2449,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "権限エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -2140,8 +2516,769 @@
               }
             }
           },
+          "403": {
+            "description": "権限エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
             "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "summary": "ログイン中の利用者（匿名を含む）を登録・更新し、記録件数を返す",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "利用者",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/seasons": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "summary": "作付けの一覧（作期の新しい順）",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "作付け一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CropSeasonListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "作付けを作成",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CropSeasonInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "作成した作付け",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CropSeason"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/seasons/{id}": {
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "summary": "作付けを更新",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CropSeasonInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新した作付け",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CropSeason"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "me"
+        ],
+        "summary": "作付けと、その散布記録を削除",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "削除結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "deleted": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "deleted"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/seasons/{id}/records": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "summary": "作付けの散布記録（散布日の古い順）",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "散布記録",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SprayRecordListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "作付けに散布記録を追加（複数件まとめて登録できる）",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SprayRecordCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "追加した散布記録",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SprayRecordListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/records/{id}": {
+      "delete": {
+        "tags": [
+          "me"
+        ],
+        "summary": "散布記録を削除",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "削除結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "deleted": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "deleted"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/seasons/{id}/verify": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "保存済みの散布記録から残り使用回数を判定",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeasonVerifyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "判定結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/merge": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "匿名ユーザーの記録を、ログイン中の登録済みアカウントに移す",
+        "description": "匿名ユーザーが既存アカウントにひも付けられなかった（credential-already-in-use）ときに使う。登録済みのアカウントでのみ呼び出せる。",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "移した作付けの件数",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MergeAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Firebase のユーザーではない",
             "content": {
               "application/json": {
                 "schema": {

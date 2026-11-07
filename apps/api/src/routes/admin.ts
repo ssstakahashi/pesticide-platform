@@ -23,7 +23,7 @@ function reviewerName(principal: AuthPrincipal | undefined): string {
     case 'api_key':
       return `api_key#${principal.keyIndex}`;
     default:
-      return 'anonymous';
+      return 'dev';
   }
 }
 
