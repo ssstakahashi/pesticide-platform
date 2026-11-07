@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { ClipboardCheck, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CropSeason } from '@pesticide/api-contract';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +37,13 @@ export function RecordsPage() {
 
   const selected = seasons.data?.find((s) => s.id === seasonId);
   const select = (id: string | undefined) => navigate({ search: { season: id } });
+  const detailRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!selected?.id) return;
+    if (window.matchMedia('(min-width: 1024px)').matches) return;
+    detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [selected?.id]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
@@ -89,11 +96,11 @@ export function RecordsPage() {
         </CardContent>
       </Card>
 
-      <div className="flex flex-col gap-4">
+      <div ref={detailRef} className="flex scroll-mt-4 flex-col gap-4">
         {selected ? (
           <SeasonDetail key={selected.id} season={selected} onDeleted={() => select(undefined)} />
         ) : (
-          <p className="text-muted-foreground text-sm">左の一覧から作付けを選んでください。</p>
+          <p className="text-muted-foreground text-sm">一覧から作付けを選んでください。</p>
         )}
       </div>
     </div>
@@ -117,8 +124,8 @@ function SeasonDetail({ season, onDeleted }: { season: CropSeason; onDeleted: ()
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="flex flex-col gap-1.5">
-              <CardTitle>{season.name}</CardTitle>
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <CardTitle className="break-words">{season.name}</CardTitle>
               <CardDescription>
                 {[season.fieldName, season.cropName, seasonPeriod(season)].filter(Boolean).join(' ・ ')}
               </CardDescription>
@@ -161,57 +168,95 @@ function SeasonDetail({ season, onDeleted }: { season: CropSeason; onDeleted: ()
             </div>
           )}
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>散布日</TableHead>
-                <TableHead>農薬</TableHead>
-                <TableHead>希釈倍数</TableHead>
-                <TableHead>散布量</TableHead>
-                <TableHead>メモ</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {records.data?.length === 0 && (
+          <div className="flex flex-col gap-2 md:hidden">
+            {records.data?.length === 0 && (
+              <p className="text-muted-foreground text-center text-sm">散布記録はまだありません</p>
+            )}
+            {records.data?.map((r) => (
+              <div key={r.id} className="rounded-md border p-3 text-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium">{r.sprayedDate}</p>
+                    <p className="break-words">
+                      {r.pesticideName ?? '（登録情報なし）'}
+                      <span className="text-muted-foreground ml-1 text-xs">第{r.registrationNumber}号</span>
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="削除"
+                    onClick={() => {
+                      if (window.confirm('この散布記録を削除しますか？')) deleteRecord.mutate(r.id);
+                    }}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
+                <dl className="mt-2 grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-2 gap-y-1 text-xs">
+                  <dt className="text-muted-foreground">希釈倍数</dt>
+                  <dd className="break-words">{r.dilution ?? '-'}</dd>
+                  <dt className="text-muted-foreground">散布量</dt>
+                  <dd className="break-words">{r.amount ?? '-'}</dd>
+                  <dt className="text-muted-foreground">メモ</dt>
+                  <dd className="break-words">{r.note ?? '-'}</dd>
+                </dl>
+              </div>
+            ))}
+          </div>
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-muted-foreground text-center">
-                    散布記録はまだありません
-                  </TableCell>
+                  <TableHead>散布日</TableHead>
+                  <TableHead>農薬</TableHead>
+                  <TableHead>希釈倍数</TableHead>
+                  <TableHead>散布量</TableHead>
+                  <TableHead>メモ</TableHead>
+                  <TableHead className="w-10" />
                 </TableRow>
-              )}
-              {records.data?.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell>{r.sprayedDate}</TableCell>
-                  <TableCell>
-                    {r.pesticideName ?? '（登録情報なし）'}
-                    <span className="text-muted-foreground ml-1 text-xs">第{r.registrationNumber}号</span>
-                  </TableCell>
-                  <TableCell>{r.dilution ?? '-'}</TableCell>
-                  <TableCell>{r.amount ?? '-'}</TableCell>
-                  <TableCell className="max-w-48 truncate text-xs" title={r.note ?? undefined}>
-                    {r.note ?? '-'}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="削除"
-                      onClick={() => {
-                        if (window.confirm('この散布記録を削除しますか？')) deleteRecord.mutate(r.id);
-                      }}
-                    >
-                      <Trash2 />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {records.data?.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-muted-foreground text-center">
+                      散布記録はまだありません
+                    </TableCell>
+                  </TableRow>
+                )}
+                {records.data?.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>{r.sprayedDate}</TableCell>
+                    <TableCell>
+                      {r.pesticideName ?? '（登録情報なし）'}
+                      <span className="text-muted-foreground ml-1 text-xs">第{r.registrationNumber}号</span>
+                    </TableCell>
+                    <TableCell>{r.dilution ?? '-'}</TableCell>
+                    <TableCell>{r.amount ?? '-'}</TableCell>
+                    <TableCell className="max-w-48 truncate text-xs" title={r.note ?? undefined}>
+                      {r.note ?? '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="削除"
+                        onClick={() => {
+                          if (window.confirm('この散布記録を削除しますか？')) deleteRecord.mutate(r.id);
+                        }}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           <AddRecordForm seasonId={season.id} />
 
-          <Button className="self-start" disabled={verify.isPending} onClick={() => verify.mutate()}>
+          <Button className="w-full sm:w-auto sm:self-start" disabled={verify.isPending} onClick={() => verify.mutate()}>
             {verify.isPending ? <Loader2 className="animate-spin" /> : <ClipboardCheck />}
             残り回数をチェック
           </Button>
@@ -294,7 +339,7 @@ function AddRecordForm({ seasonId }: { seasonId: string }) {
       <Button
         type="submit"
         variant="outline"
-        className="self-start"
+        className="w-full sm:w-auto sm:self-start"
         disabled={!registrationNumber.trim() || !sprayedDate || createRecords.isPending}
       >
         {createRecords.isPending ? <Loader2 className="animate-spin" /> : <Plus />}

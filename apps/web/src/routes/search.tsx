@@ -70,7 +70,7 @@ export function SearchPage() {
           <Label htmlFor="category">用途</Label>
           <select
             id="category"
-            className="border-input h-9 rounded-md border bg-transparent px-3 text-sm shadow-xs"
+            className="border-input h-9 w-full rounded-md border bg-transparent px-3 text-base shadow-xs md:text-sm"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
@@ -82,7 +82,7 @@ export function SearchPage() {
             ))}
           </select>
         </div>
-        <Button type="submit">
+        <Button type="submit" className="w-full md:w-auto">
           {isFetching ? <Loader2 className="animate-spin" /> : <Search />}
           検索
         </Button>

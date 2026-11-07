@@ -82,6 +82,19 @@ export function bearerAuth(env: Pick<Env, 'AUTH_MODE' | 'API_KEYS' | 'FIREBASE_P
   });
 }
 
+/** 登録済みかつ ADMIN_UIDS に含まれる Firebase ユーザーか */
+export function isListedAdmin(env: Pick<Env, 'ADMIN_UIDS'>, principal: FirebasePrincipal): boolean {
+  return !principal.isAnonymous && env.ADMIN_UIDS.includes(principal.uid);
+}
+
+/**
+ * Web に返す管理権限。AUTH_MODE=disabled では requireAdmin と同じく開発ユーザーを管理者として扱う。
+ */
+export function isAdminUser(env: Pick<Env, 'AUTH_MODE' | 'ADMIN_UIDS'>, principal: FirebasePrincipal): boolean {
+  if (env.AUTH_MODE === 'disabled') return true;
+  return isListedAdmin(env, principal);
+}
+
 /** bearerAuth の後に置く。APIキーか ADMIN_UIDS に含まれる登録済みユーザーだけを通す */
 export function requireAdmin(env: Pick<Env, 'ADMIN_UIDS'>) {
   return createMiddleware<{ Variables: AuthVariables }>(async (c, next) => {
@@ -89,7 +102,7 @@ export function requireAdmin(env: Pick<Env, 'ADMIN_UIDS'>) {
     const allowed =
       principal.type === 'dev' ||
       principal.type === 'api_key' ||
-      (principal.type === 'firebase' && !principal.isAnonymous && env.ADMIN_UIDS.includes(principal.uid));
+      (principal.type === 'firebase' && isListedAdmin(env, principal));
     if (!allowed) return c.json({ error: 'この操作を行う権限がありません' }, 403);
     return next();
   });

@@ -31,10 +31,15 @@ type TokenVerifier = (token: string) => Promise<FirebasePrincipal | null>;
 const seasonNotFound = { error: '作付けが見つかりません' };
 const recordNotFound = { error: '散布記録が見つかりません' };
 
-export const meRoutes = (db: Database, verifyToken: TokenVerifier | null) =>
+export const meRoutes = (
+  db: Database,
+  verifyToken: TokenVerifier | null,
+  isAdmin: (principal: FirebasePrincipal) => boolean,
+) =>
   createRouter<{ Variables: UserVariables }>()
     .openapi(getMeRoute, async (c) => {
-      return c.json(await getMe(db, c.get('principal')), 200);
+      const principal = c.get('principal');
+      return c.json(await getMe(db, principal, isAdmin(principal)), 200);
     })
     .openapi(listSeasonsRoute, async (c) => {
       return c.json({ items: await listSeasons(db, c.get('principal').uid) }, 200);

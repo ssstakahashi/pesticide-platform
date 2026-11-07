@@ -417,6 +417,8 @@ export const MeSchema = z
     email: z.string().nullable(),
     seasonCount: z.number().int(),
     recordCount: z.number().int(),
+    /** ADMIN_UIDS に含まれる登録済みユーザー。AUTH_MODE=disabled の開発時は true */
+    isAdmin: z.boolean(),
   })
   .openapi('Me');
 

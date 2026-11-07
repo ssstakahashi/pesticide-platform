@@ -6,7 +6,14 @@ import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import type { Env } from './env';
-import { bearerAuth, requireAdmin, requireUser, verifyFirebaseToken, type UserVariables } from './middleware/auth';
+import {
+  bearerAuth,
+  isAdminUser,
+  requireAdmin,
+  requireUser,
+  verifyFirebaseToken,
+  type UserVariables,
+} from './middleware/auth';
 import { rateLimit } from './middleware/rate-limit';
 import { createRouter } from './router';
 import { collectionAdminRoutes } from './routes/admin';
@@ -75,7 +82,9 @@ export function createApp({ db, env }: { db: Database; env: Env }) {
     .route('/api/admin/collection', collectionAdminRoutes(db, signer))
     .route(
       '/api/me',
-      meRoutes(db, firebaseProjectId ? (token) => verifyFirebaseToken(token, firebaseProjectId) : null),
+      meRoutes(db, firebaseProjectId ? (token) => verifyFirebaseToken(token, firebaseProjectId) : null, (principal) =>
+        isAdminUser(env, principal),
+      ),
     );
 
   app.doc31('/doc', {

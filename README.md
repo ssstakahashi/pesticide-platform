@@ -58,7 +58,7 @@ pnpm dev                      # web: http://localhost:5173 / api: http://localho
 `POST /api/verify` と `/api/admin/*` は `Authorization: Bearer <token>` が必要です。トークンは `API_KEYS`（システム間連携用）か、
 Firebase Auth の ID トークン（`FIREBASE_PROJECT_ID` を設定）で検証します。`AUTH_MODE=disabled` はローカル開発専用です。
 
-- `/api/admin/*` は APIキーか、`ADMIN_UIDS` に含まれる登録済みの Firebase ユーザーだけが使えます（匿名ログインは不可）
+- `/api/admin/*` は APIキーか、`ADMIN_UIDS` に含まれる登録済みの Firebase ユーザーだけが使えます（匿名ログインは不可）。Web の「収集データ確認」も、この利用者のときだけ表示します
 - `/api/me/*` は Firebase のユーザー（匿名を含む）だけが使えます。`AUTH_MODE=disabled` のときは固定の `dev-user` として動きます
 
 ### 匿名ログインと散布記録
@@ -99,7 +99,7 @@ pnpm --filter @pesticide/collector collector:cron              # 定期実行（
    - 検索 API を設定しない（`none`）場合は、管理画面で登録した候補 URL のみを巡回します
 2. 取得: robots.txt を守り、同一ホストへは `COLLECTOR_HOST_INTERVAL_MS` 間隔でアクセス（社内・プライベート IP へのアクセスは拒否）
 3. 検証: 公式ドメイン・登録番号・農薬名・製造会社名の一致をスコア化し、`AUTO_APPROVE_SCORE`（既定90）以上は自動採用、それ未満は「要確認」
-4. 確認: Web の「収集データ確認」（`/review`）で承認・却下。公式ページを承認するとそのドメインを製造会社の公式ドメインとして学習し、
+4. 確認: 管理者だけが見られる Web の「収集データ確認」（`/review`）で承認・却下。公式ページを承認するとそのドメインを製造会社の公式ドメインとして学習し、
    以降は同じ会社の資料が自動採用されやすくなります
 5. 再巡回: 成功した農薬は `COLLECTOR_RECHECK_DAYS` 日後、失敗した農薬は 1時間〜最大7日の間隔で再試行
 

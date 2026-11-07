@@ -72,7 +72,7 @@ function LinkDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
     <dialog
       ref={ref}
       onClose={onClose}
-      className="bg-card text-card-foreground m-auto w-[min(92vw,400px)] rounded-xl border p-0 shadow-lg backdrop:bg-black/40"
+      className="bg-card text-card-foreground m-auto max-h-[90dvh] w-[min(92vw,400px)] overflow-y-auto rounded-xl border p-0 shadow-lg backdrop:bg-black/40"
     >
       <div className="flex flex-col gap-4 p-5">
         <div className="flex items-start justify-between gap-2">

@@ -8,10 +8,11 @@ import {
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { PesticideSearchResult } from '@pesticide/api-contract';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useIsMdUp } from '@/lib/use-media-query';
 import { cn } from '@/lib/utils';
 
 type UsageView = {
@@ -222,7 +223,7 @@ function textOrDash(value: string | null): string {
 function NameCell({ group }: { group: PesticideGroup }) {
   return (
     <>
-      <div className="font-medium">{group.pesticideName}</div>
+      <div className="font-medium break-words">{group.pesticideName}</div>
       <RegistrationNumbers numbers={group.registrationNumbers} />
     </>
   );
@@ -325,8 +326,35 @@ const USAGE_COLUMN_IDS = [
   'ingredient_limits_summary',
 ];
 
+const MOBILE_FIELDS: { id: string; label: string }[] = [
+  { id: 'registered_crop_name', label: '登録作物' },
+  { id: 'target_pests', label: '適用病害虫' },
+  { id: 'dilution_text', label: '希釈倍数・使用量' },
+  { id: 'usage_timing_text', label: '使用時期' },
+  { id: 'phi_days', label: '収穫前日数' },
+  { id: 'max_applications_count', label: '本剤回数' },
+  { id: 'application_method', label: '使用方法' },
+  { id: 'ingredient_limits_summary', label: '成分ごとの総使用回数' },
+];
+
+const MOBILE_SORTS = [
+  { id: 'pesticideName', label: '農薬名' },
+  { id: 'usage_category', label: '用途' },
+  { id: 'formulation_type', label: '剤型' },
+  { id: 'registered_crop_name', label: '登録作物' },
+  { id: 'target_pests', label: '適用病害虫' },
+  { id: 'dilution_text', label: '希釈倍数・使用量' },
+  { id: 'usage_timing_text', label: '使用時期' },
+  { id: 'phi_days', label: '収穫前日数' },
+  { id: 'max_applications_count', label: '本剤回数' },
+  { id: 'application_method', label: '使用方法' },
+];
+
+const selectClass = 'border-input h-9 min-w-0 rounded-md border bg-transparent px-2 text-base shadow-xs';
+
 /** 数万件の適用一覧でも軽快に描画できるよう、農薬単位の行を仮想スクロールで描画する */
 export function ResultsTable({ items }: { items: PesticideSearchResult[] }) {
+  const isWide = useIsMdUp();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const groups = useMemo(() => groupSearchResults(items), [items]);
@@ -346,10 +374,16 @@ export function ResultsTable({ items }: { items: PesticideSearchResult[] }) {
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: (index) => 40 + (rows[index]?.original.usages.length ?? 1) * 52,
+    estimateSize: (index) => {
+      const usages = rows[index]?.original.usages.length ?? 1;
+      return isWide ? 40 + usages * 52 : 96 + usages * 168;
+    },
     overscan: 8,
     getItemKey: (index) => rows[index]?.id ?? index,
   });
+  useEffect(() => {
+    virtualizer.measure();
+  }, [isWide, virtualizer]);
   const virtualRows = virtualizer.getVirtualItems();
   const paddingTop = virtualRows[0]?.start ?? 0;
   const paddingBottom = virtualizer.getTotalSize() - (virtualRows.at(-1)?.end ?? 0);
@@ -358,18 +392,20 @@ export function ResultsTable({ items }: { items: PesticideSearchResult[] }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <Input
-          className="max-w-xs"
+          className="w-full sm:max-w-xs"
           placeholder="結果を絞り込み（農薬名・病害虫など）"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-xs sm:text-sm">
           {rows.length} / {groups.length} 農薬（適用 {visibleUsages} / {totalUsages} 件）
         </span>
       </div>
-      <div ref={scrollRef} className="h-[65vh] overflow-auto rounded-md border">
+      <MobileSort sorting={sorting} onChange={setSorting} />
+      <div ref={scrollRef} className="h-[70dvh] overflow-auto rounded-md border md:h-[65vh]">
+        {isWide ? (
         <div role="table" className="grid w-full text-sm" style={{ gridTemplateColumns: COLUMN_TEMPLATE }}>
           {table.getHeaderGroups().map((headerGroup) =>
             headerGroup.headers.map((header) => {
@@ -417,8 +453,106 @@ export function ResultsTable({ items }: { items: PesticideSearchResult[] }) {
           })}
           {paddingBottom > 0 && <div aria-hidden className="col-span-full" style={{ height: paddingBottom }} />}
         </div>
+        ) : (
+          <div>
+            {paddingTop > 0 && <div aria-hidden style={{ height: paddingTop }} />}
+            {virtualRows.map((virtualRow) => {
+              const row = rows[virtualRow.index]!;
+              return (
+                <PesticideCard
+                  key={row.id}
+                  group={row.original}
+                  index={virtualRow.index}
+                  measureRef={virtualizer.measureElement}
+                />
+              );
+            })}
+            {paddingBottom > 0 && <div aria-hidden style={{ height: paddingBottom }} />}
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function MobileSort({
+  sorting,
+  onChange,
+}: {
+  sorting: SortingState;
+  onChange: (sorting: SortingState) => void;
+}) {
+  const current = sorting[0];
+  return (
+    <div className="flex gap-2 md:hidden">
+      <label className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="text-muted-foreground text-xs">並び順</span>
+        <select
+          className={selectClass}
+          value={current?.id ?? ''}
+          onChange={(e) => {
+            const id = e.target.value;
+            if (!id) onChange([]);
+            else onChange([{ id, desc: current?.desc ?? false }]);
+          }}
+        >
+          <option value="">指定なし</option>
+          {MOBILE_SORTS.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="flex w-24 shrink-0 flex-col gap-1">
+        <span className="text-muted-foreground text-xs">向き</span>
+        <select
+          className={selectClass}
+          value={current?.desc ? 'desc' : 'asc'}
+          disabled={!current}
+          onChange={(e) => {
+            if (!current) return;
+            onChange([{ id: current.id, desc: e.target.value === 'desc' }]);
+          }}
+        >
+          <option value="asc">昇順</option>
+          <option value="desc">降順</option>
+        </select>
+      </label>
+    </div>
+  );
+}
+
+function PesticideCard({
+  group,
+  index,
+  measureRef,
+}: {
+  group: PesticideGroup;
+  index: number;
+  measureRef: (element: HTMLElement | null) => void;
+}) {
+  return (
+    <article data-index={index} ref={measureRef} className="border-b p-3">
+      <NameCell group={group} />
+      <p className="text-muted-foreground mt-1 text-xs break-words">
+        用途 {textOrDash(group.usageCategory)} ・ 剤型 {textOrDash(group.formulationType)}
+      </p>
+      <div className="mt-3 flex flex-col gap-3">
+        {group.usages.map((usage) => (
+          <dl key={usage.key} className="flex flex-col gap-2 border-t pt-3">
+            {MOBILE_FIELDS.map((field) => (
+              <div key={field.id} className="min-w-0">
+                <dt className="text-muted-foreground text-xs">{field.label}</dt>
+                <dd className="break-words">
+                  <UsageValue group={group} usage={usage} columnId={field.id} />
+                </dd>
+              </div>
+            ))}
+          </dl>
+        ))}
+      </div>
+    </article>
   );
 }
 

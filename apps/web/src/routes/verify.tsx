@@ -167,9 +167,9 @@ export function VerifyPage() {
             <div className="flex flex-col gap-2">
               <Label>これまでに散布した農薬（登録番号・散布日）</Label>
               {history.map((row) => (
-                <div key={row.key} className="flex gap-2">
+                <div key={row.key} className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <Input
-                    className="w-28"
+                    className="sm:w-28"
                     inputMode="numeric"
                     placeholder="登録番号"
                     value={row.registrationNumber}
@@ -177,15 +177,18 @@ export function VerifyPage() {
                     title={row.savedId ? '保存済み' : undefined}
                     onChange={(e) => updateRow(row.key, { registrationNumber: e.target.value })}
                   />
-                  <Input
-                    type="date"
-                    value={row.sprayedDate}
-                    readOnly={Boolean(row.savedId)}
-                    onChange={(e) => updateRow(row.key, { sprayedDate: e.target.value })}
-                  />
-                  <Button type="button" variant="ghost" size="icon" aria-label="削除" onClick={() => removeRow(row)}>
-                    <Trash2 />
-                  </Button>
+                  <div className="flex min-w-0 gap-2 sm:flex-1">
+                    <Input
+                      type="date"
+                      className="min-w-0 flex-1"
+                      value={row.sprayedDate}
+                      readOnly={Boolean(row.savedId)}
+                      onChange={(e) => updateRow(row.key, { sprayedDate: e.target.value })}
+                    />
+                    <Button type="button" variant="ghost" size="icon" aria-label="削除" onClick={() => removeRow(row)}>
+                      <Trash2 />
+                    </Button>
+                  </div>
                 </div>
               ))}
               <Button
@@ -212,7 +215,7 @@ export function VerifyPage() {
                 onChange={(e) => setCandidates(e.target.value)}
               />
             </div>
-            <Button type="submit" disabled={!crop.trim() || verify.isPending}>
+            <Button type="submit" className="w-full lg:w-auto" disabled={!crop.trim() || verify.isPending}>
               {verify.isPending && <Loader2 className="animate-spin" />}
               残り使用回数をチェック
             </Button>
@@ -220,6 +223,7 @@ export function VerifyPage() {
             <Button
               type="button"
               variant="outline"
+              className="w-full lg:w-auto"
               disabled={!ready || unsavedRows.length === 0 || createRecords.isPending}
               onClick={() => {
                 setSavedMessage(null);
@@ -293,7 +297,7 @@ function VerifyResultCard({ item }: { item: VerifyPesticideResult }) {
     <Card>
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
-          <CardTitle>{item.pesticideName}</CardTitle>
+          <CardTitle className="break-words">{item.pesticideName}</CardTitle>
           <span className="text-muted-foreground text-xs">第{item.registrationNumber}号</span>
           <StatusBadge status={item.status} />
         </div>
@@ -306,36 +310,69 @@ function VerifyResultCard({ item }: { item: VerifyPesticideResult }) {
         )}
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>有効成分</TableHead>
-              <TableHead>系統(RAC)</TableHead>
-              <TableHead>総使用回数上限</TableHead>
-              <TableHead>使用済</TableHead>
-              <TableHead>残り</TableHead>
-              <TableHead>判定</TableHead>
-              <TableHead>同一成分の過去散布履歴</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {item.ingredients.map((ing) => (
-              <TableRow key={ing.ordinalPosition}>
-                <TableCell>{ing.ingredientName}</TableCell>
-                <TableCell>{ing.racCode ?? '-'}</TableCell>
-                <TableCell>{ing.maxCount == null ? '-' : `${ing.maxCount}回`}</TableCell>
-                <TableCell>{ing.usedCount}回</TableCell>
-                <TableCell>{ing.remaining == null ? '-' : `${Math.max(0, ing.remaining)}回`}</TableCell>
-                <TableCell>
-                  <StatusBadge status={item.registeredForCrop ? ing.status : 'not_registered'} />
-                </TableCell>
-                <TableCell className="text-xs">
-                  {ing.usedHistory.map((h) => `${h.pesticideName}(${h.sprayedDate})`).join('、') || '-'}
-                </TableCell>
+        <div className="flex flex-col gap-3 md:hidden">
+          {item.ingredients.map((ing) => (
+            <div key={ing.ordinalPosition} className="rounded-md border p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-medium break-words">{ing.ingredientName}</p>
+                  <p className="text-muted-foreground text-xs">系統(RAC): {ing.racCode ?? '-'}</p>
+                </div>
+                <StatusBadge status={item.registeredForCrop ? ing.status : 'not_registered'} />
+              </div>
+              <dl className="mt-3 grid grid-cols-3 gap-2 text-center text-sm">
+                <div>
+                  <dt className="text-muted-foreground text-xs">総使用回数上限</dt>
+                  <dd>{ing.maxCount == null ? '-' : `${ing.maxCount}回`}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs">使用済</dt>
+                  <dd>{ing.usedCount}回</dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground text-xs">残り</dt>
+                  <dd>{ing.remaining == null ? '-' : `${Math.max(0, ing.remaining)}回`}</dd>
+                </div>
+              </dl>
+              <p className="text-muted-foreground mt-3 text-xs break-words">
+                同一成分の過去散布履歴:{' '}
+                {ing.usedHistory.map((h) => `${h.pesticideName}(${h.sprayedDate})`).join('、') || '-'}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>有効成分</TableHead>
+                <TableHead>系統(RAC)</TableHead>
+                <TableHead>総使用回数上限</TableHead>
+                <TableHead>使用済</TableHead>
+                <TableHead>残り</TableHead>
+                <TableHead>判定</TableHead>
+                <TableHead>同一成分の過去散布履歴</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {item.ingredients.map((ing) => (
+                <TableRow key={ing.ordinalPosition}>
+                  <TableCell>{ing.ingredientName}</TableCell>
+                  <TableCell>{ing.racCode ?? '-'}</TableCell>
+                  <TableCell>{ing.maxCount == null ? '-' : `${ing.maxCount}回`}</TableCell>
+                  <TableCell>{ing.usedCount}回</TableCell>
+                  <TableCell>{ing.remaining == null ? '-' : `${Math.max(0, ing.remaining)}回`}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={item.registeredForCrop ? ing.status : 'not_registered'} />
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    {ing.usedHistory.map((h) => `${h.pesticideName}(${h.sprayedDate})`).join('、') || '-'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

@@ -64,7 +64,7 @@ export async function ensureUser(db: Pick<Database, 'insert'>, principal: Fireba
     });
 }
 
-export async function getMe(db: Database, principal: FirebasePrincipal): Promise<Me> {
+export async function getMe(db: Database, principal: FirebasePrincipal, isAdmin: boolean): Promise<Me> {
   await ensureUser(db, principal);
   const [counts] = await db
     .select({
@@ -80,6 +80,7 @@ export async function getMe(db: Database, principal: FirebasePrincipal): Promise
     email: principal.email ?? null,
     seasonCount: counts?.seasonCount ?? 0,
     recordCount: counts?.recordCount ?? 0,
+    isAdmin,
   };
 }
 

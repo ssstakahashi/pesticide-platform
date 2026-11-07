@@ -1171,6 +1171,9 @@
           },
           "recordCount": {
             "type": "integer"
+          },
+          "isAdmin": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -1178,7 +1181,8 @@
           "isAnonymous",
           "email",
           "seasonCount",
-          "recordCount"
+          "recordCount",
+          "isAdmin"
         ]
       },
       "CropSeasonListResponse": {

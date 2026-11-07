@@ -42,13 +42,21 @@ export function AccountMenu() {
 
   return (
     <div ref={ref} className="relative ml-auto">
-      <Button variant="ghost" size="sm" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-expanded={open}
+        aria-label={isAnonymous ? 'この端末に保存中' : (user.email ?? 'ログイン中')}
+        onClick={() => setOpen((v) => !v)}
+      >
         {isAnonymous ? <HardDrive /> : <UserRound />}
-        <span className="max-w-48 truncate">{isAnonymous ? 'この端末に保存中' : (user.email ?? 'ログイン中')}</span>
+        <span className="hidden max-w-48 truncate sm:inline">
+          {isAnonymous ? 'この端末に保存中' : (user.email ?? 'ログイン中')}
+        </span>
         <ChevronDown />
       </Button>
       {open && (
-        <div className="bg-card absolute right-0 z-20 mt-1 flex w-64 flex-col gap-3 rounded-md border p-3 text-sm shadow-md">
+        <div className="bg-card absolute right-0 z-20 mt-1 flex w-64 max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-md border p-3 text-sm shadow-md">
           {isAnonymous ? (
             <>
               <p className="text-muted-foreground">

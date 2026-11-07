@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Navigate } from '@tanstack/react-router';
 import { Check, ExternalLink, FileText, Loader2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { AssetType, ReviewItem, ReviewStatus } from '@pesticide/api-contract';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/features/auth/auth-provider';
+import { meQuery } from '@/features/records/queries';
 import { api, toApiUrl, unwrap } from '@/lib/api';
 
 const STATUS_LABEL: Record<ReviewStatus, { label: string; variant: 'warning' | 'success' | 'destructive' }> = {
@@ -30,7 +33,23 @@ const DOCUMENT_KIND_LABEL: Record<string, string> = {
 
 const reviewQueryKey = ['admin', 'collection'] as const;
 
+/** 管理者以外は収集データを表示せず、適用検索へ戻す */
 export function ReviewPage() {
+  const { ready } = useAuth();
+  const me = useQuery(meQuery(ready));
+
+  if (!ready || me.isPending) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="text-muted-foreground size-5 animate-spin" />
+      </div>
+    );
+  }
+  if (!me.data?.isAdmin) return <Navigate to="/" replace />;
+  return <ReviewPageBody />;
+}
+
+function ReviewPageBody() {
   const [status, setStatus] = useState<ReviewStatus>('pending');
   const [type, setType] = useState<AssetType | undefined>(undefined);
 
@@ -44,10 +63,11 @@ export function ReviewPage() {
   });
 
   const pendingCount = stats.data?.assets.filter((a) => a.status === 'pending').reduce((sum, a) => sum + a.count, 0);
+  const groups = useMemo(() => groupReviewItems(list.data?.items ?? []), [list.data?.items]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-      <div className="flex flex-col gap-6">
+      <div className="order-last flex flex-col gap-6 lg:order-none">
         <Card>
           <CardHeader>
             <CardTitle>収集状況</CardTitle>
@@ -100,15 +120,85 @@ export function ReviewPage() {
         {list.data && list.data.items.length === 0 && (
           <p className="text-muted-foreground text-sm">該当するデータはありません。</p>
         )}
-        {list.data?.items.map((item) => (
-          <ReviewItemCard key={`${item.type}:${item.id}`} item={item} />
-        ))}
+        {list.data && groups.map((items) => <ReviewPesticideCard key={items[0]?.pesticideName} items={items} />)}
       </div>
     </div>
   );
 }
 
-function ReviewItemCard({ item }: { item: ReviewItem }) {
+/** 同じ農薬名の収集データを1枚にまとめる。並びはスコアの高い順のまま */
+function groupReviewItems(items: ReviewItem[]): ReviewItem[][] {
+  const groups: ReviewItem[][] = [];
+  const indexByName = new Map<string, number>();
+  for (const item of items) {
+    const index = indexByName.get(item.pesticideName);
+    if (index === undefined) {
+      indexByName.set(item.pesticideName, groups.length);
+      groups.push([item]);
+    } else {
+      groups[index]?.push(item);
+    }
+  }
+  return groups;
+}
+
+function ReviewPesticideCard({ items }: { items: ReviewItem[] }) {
+  const first = items[0];
+  if (!first) return null;
+  if (items.length === 1) {
+    return (
+      <Card>
+        <ReviewItemFields item={first} layout="standalone" />
+      </Card>
+    );
+  }
+
+  const registrationNumbers = [...new Set(items.map((item) => item.registrationNumber))].sort((a, b) =>
+    a.localeCompare(b, 'ja', { numeric: true }),
+  );
+  const registrants = [...new Set(items.flatMap((item) => (item.registrantName ? [item.registrantName] : [])))];
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center gap-2">
+          <CardTitle className="break-words">{first.pesticideName}</CardTitle>
+          <span className="text-muted-foreground text-xs">
+            {registrationNumbers.map((number, index) => (
+              <span key={number} className="whitespace-nowrap">
+                {index > 0 ? '・' : ''}第{number}号
+              </span>
+            ))}
+          </span>
+        </div>
+        {registrants.length > 0 && <CardDescription>{registrants.join('、')}</CardDescription>}
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {items.map((item) => (
+          <ReviewItemFields
+            key={`${item.type}:${item.id}`}
+            item={item}
+            layout="grouped"
+            showRegistrationNumber={registrationNumbers.length > 1}
+            showRegistrant={registrants.length > 1}
+          />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReviewItemFields({
+  item,
+  layout,
+  showRegistrationNumber = false,
+  showRegistrant = false,
+}: {
+  item: ReviewItem;
+  layout: 'standalone' | 'grouped';
+  showRegistrationNumber?: boolean;
+  showRegistrant?: boolean;
+}) {
   const queryClient = useQueryClient();
   const [note, setNote] = useState('');
   const review = useMutation({
@@ -121,126 +211,156 @@ function ReviewItemCard({ item }: { item: ReviewItem }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reviewQueryKey }),
   });
   const { label, variant } = STATUS_LABEL[item.status];
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-wrap items-center gap-2">
-          <CardTitle>{item.pesticideName}</CardTitle>
-          <span className="text-muted-foreground text-xs">第{item.registrationNumber}号</span>
-          <Badge variant="secondary">
-            {TYPE_LABEL[item.type]}
-            {item.kind && `（${DOCUMENT_KIND_LABEL[item.kind] ?? item.kind}）`}
-          </Badge>
-          <Badge variant={variant}>{label}</Badge>
-          <Badge variant="outline">スコア {item.verificationScore ?? 0}</Badge>
-        </div>
-        <CardDescription className="break-all">
-          {item.registrantName && <span className="mr-2">{item.registrantName}</span>}
-          {item.title}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-col gap-4 sm:flex-row">
-          {item.type === 'image' && item.fileUrl && (
-            <a href={toApiUrl(item.fileUrl)} target="_blank" rel="noreferrer" className="shrink-0">
-              <img
-                src={toApiUrl(item.fileUrl)}
-                alt={item.title ?? item.pesticideName}
-                loading="lazy"
-                className="h-40 w-auto max-w-60 rounded-md border object-contain"
-              />
+  const badges = (
+    <>
+      <Badge variant="secondary">
+        {TYPE_LABEL[item.type]}
+        {item.kind && `（${DOCUMENT_KIND_LABEL[item.kind] ?? item.kind}）`}
+      </Badge>
+      <Badge variant={variant}>{label}</Badge>
+      <Badge variant="outline">スコア {item.verificationScore ?? 0}</Badge>
+    </>
+  );
+  const details = (
+    <>
+      <div className="flex flex-col gap-4 sm:flex-row">
+        {item.type === 'image' && item.fileUrl && (
+          <a href={toApiUrl(item.fileUrl)} target="_blank" rel="noreferrer" className="shrink-0">
+            <img
+              src={toApiUrl(item.fileUrl)}
+              alt={item.title ?? item.pesticideName}
+              loading="lazy"
+              className="h-40 w-auto max-w-full rounded-md border object-contain sm:max-w-60"
+            />
+          </a>
+        )}
+        <div className="flex min-w-0 flex-col gap-2 text-sm">
+          <ul className="flex flex-col gap-1">
+            {item.verificationDetails?.checks.map((check) => (
+              <li key={check.name} className="flex items-center gap-2">
+                {check.passed ? (
+                  <Check className="size-4 shrink-0 text-emerald-600" />
+                ) : (
+                  <X className="text-muted-foreground size-4 shrink-0" />
+                )}
+                <span className={check.passed ? '' : 'text-muted-foreground'}>
+                  {check.name}（{check.weight}点）
+                  {check.note && <span className="text-muted-foreground ml-1 text-xs">{check.note}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="flex flex-col gap-1 text-xs">
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 break-all underline"
+            >
+              <ExternalLink className="size-3 shrink-0" />
+              {safeDecodeUrl(item.url)}
             </a>
-          )}
-          <div className="flex min-w-0 flex-col gap-2 text-sm">
-            <ul className="flex flex-col gap-1">
-              {item.verificationDetails?.checks.map((check) => (
-                <li key={check.name} className="flex items-center gap-2">
-                  {check.passed ? (
-                    <Check className="size-4 shrink-0 text-emerald-600" />
-                  ) : (
-                    <X className="text-muted-foreground size-4 shrink-0" />
-                  )}
-                  <span className={check.passed ? '' : 'text-muted-foreground'}>
-                    {check.name}（{check.weight}点）
-                    {check.note && <span className="text-muted-foreground ml-1 text-xs">{check.note}</span>}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="flex flex-col gap-1 text-xs">
+            {item.pageUrl && item.pageUrl !== item.url && (
               <a
-                href={item.url}
+                href={item.pageUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 break-all underline"
+                className="text-muted-foreground inline-flex items-center gap-1 break-all underline"
               >
-                <ExternalLink className="size-3 shrink-0" />
-                {safeDecodeUrl(item.url)}
+                掲載ページ: {safeDecodeUrl(item.pageUrl)}
               </a>
-              {item.pageUrl && item.pageUrl !== item.url && (
-                <a
-                  href={item.pageUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-muted-foreground inline-flex items-center gap-1 break-all underline"
-                >
-                  掲載ページ: {safeDecodeUrl(item.pageUrl)}
-                </a>
-              )}
-              {item.type === 'document' && item.fileUrl && (
-                <a
-                  href={toApiUrl(item.fileUrl)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 underline"
-                >
-                  <FileText className="size-3 shrink-0" />
-                  保存済み PDF を開く
-                </a>
-              )}
-            </div>
-            {item.reviewedBy && (
-              <p className="text-muted-foreground text-xs">
-                確認者: {item.reviewedBy}
-                {item.reviewNote && ` / ${item.reviewNote}`}
-              </p>
+            )}
+            {item.type === 'document' && item.fileUrl && (
+              <a
+                href={toApiUrl(item.fileUrl)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 underline"
+              >
+                <FileText className="size-3 shrink-0" />
+                保存済み PDF を開く
+              </a>
             )}
           </div>
+          {item.reviewedBy && (
+            <p className="text-muted-foreground text-xs">
+              確認者: {item.reviewedBy}
+              {item.reviewNote && ` / ${item.reviewNote}`}
+            </p>
+          )}
         </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          className="w-full min-w-0 sm:max-w-xs"
+          placeholder="メモ（任意）"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+        <Button
+          size="sm"
+          disabled={review.isPending || item.status === 'approved'}
+          onClick={() => review.mutate('approve')}
+        >
+          <Check />
+          承認
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={review.isPending || item.status === 'rejected'}
+          onClick={() => review.mutate('reject')}
+        >
+          <X />
+          却下
+        </Button>
+        {review.error && <p className="text-destructive text-sm">{review.error.message}</p>}
+      </div>
+      {item.type === 'web_page' && item.status === 'pending' && (
+        <p className="text-muted-foreground text-xs">
+          公式ページを承認すると、このサイトのドメインを製造会社の公式ドメインとして登録し、以降の自動判定に使います。
+        </p>
+      )}
+    </>
+  );
+
+  if (layout === 'standalone') {
+    return (
+      <>
+        <CardHeader>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle className="break-words">{item.pesticideName}</CardTitle>
+            <span className="text-muted-foreground text-xs">第{item.registrationNumber}号</span>
+            {badges}
+          </div>
+          <CardDescription className="break-all">
+            {item.registrantName && <span className="mr-2">{item.registrantName}</span>}
+            {item.title}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">{details}</CardContent>
+      </>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 rounded-md border p-3">
+      <div className="flex flex-col gap-1.5">
         <div className="flex flex-wrap items-center gap-2">
-          <Input
-            className="max-w-xs"
-            placeholder="メモ（任意）"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-          <Button
-            size="sm"
-            disabled={review.isPending || item.status === 'approved'}
-            onClick={() => review.mutate('approve')}
-          >
-            <Check />
-            承認
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={review.isPending || item.status === 'rejected'}
-            onClick={() => review.mutate('reject')}
-          >
-            <X />
-            却下
-          </Button>
-          {review.error && <p className="text-destructive text-sm">{review.error.message}</p>}
+          {showRegistrationNumber && (
+            <span className="text-muted-foreground text-xs">第{item.registrationNumber}号</span>
+          )}
+          {badges}
         </div>
-        {item.type === 'web_page' && item.status === 'pending' && (
-          <p className="text-muted-foreground text-xs">
-            公式ページを承認すると、このサイトのドメインを製造会社の公式ドメインとして登録し、以降の自動判定に使います。
+        {((showRegistrant && item.registrantName) || item.title) && (
+          <p className="text-muted-foreground text-sm break-all">
+            {showRegistrant && item.registrantName && <span className="mr-2">{item.registrantName}</span>}
+            {item.title}
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      {details}
+    </div>
   );
 }
 

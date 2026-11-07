@@ -1970,6 +1970,7 @@ export interface components {
             email: string | null;
             seasonCount: number;
             recordCount: number;
+            isAdmin: boolean;
         };
         CropSeasonListResponse: {
             items: components["schemas"]["CropSeason"][];
