@@ -1,0 +1,1525 @@
+{
+  "id": "4e347772-3fff-4fae-830e-d92423dba7c0",
+  "prevId": "6e2c62e7-aa99-4264-8cf4-c679311c4874",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.agr_crops": {
+      "name": "agr_crops",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level": {
+          "name": "level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 3
+        },
+        "synonyms": {
+          "name": "synonyms",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_agr_crops_parent_id": {
+          "name": "idx_agr_crops_parent_id",
+          "columns": [
+            {
+              "expression": "parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_agr_crops_name_trgm": {
+          "name": "idx_agr_crops_name_trgm",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agr_crops_name_unique": {
+          "name": "agr_crops_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_ingredients": {
+      "name": "agr_ingredients",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_count_group_name": {
+          "name": "total_count_group_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "frac_code": {
+          "name": "frac_code",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "irac_code": {
+          "name": "irac_code",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hrac_code": {
+          "name": "hrac_code",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_agr_ingredients_name_trgm": {
+          "name": "idx_agr_ingredients_name_trgm",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agr_ingredients_name_unique": {
+          "name": "agr_ingredients_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_pesticide_ingredients": {
+      "name": "agr_pesticide_ingredients",
+      "schema": "",
+      "columns": {
+        "registration_number": {
+          "name": "registration_number",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordinal_position": {
+          "name": "ordinal_position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "concentration_text": {
+          "name": "concentration_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_agr_pesticide_ing_ing_id": {
+          "name": "idx_agr_pesticide_ing_ing_id",
+          "columns": [
+            {
+              "expression": "ingredient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agr_pesticide_ingredients_registration_number_agr_pesticides_registration_number_fk": {
+          "name": "agr_pesticide_ingredients_registration_number_agr_pesticides_registration_number_fk",
+          "tableFrom": "agr_pesticide_ingredients",
+          "tableTo": "agr_pesticides",
+          "columnsFrom": [
+            "registration_number"
+          ],
+          "columnsTo": [
+            "registration_number"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "agr_pesticide_ingredients_ingredient_id_agr_ingredients_id_fk": {
+          "name": "agr_pesticide_ingredients_ingredient_id_agr_ingredients_id_fk",
+          "tableFrom": "agr_pesticide_ingredients",
+          "tableTo": "agr_ingredients",
+          "columnsFrom": [
+            "ingredient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "agr_pesticide_ingredients_registration_number_ordinal_position_pk": {
+          "name": "agr_pesticide_ingredients_registration_number_ordinal_position_pk",
+          "columns": [
+            "registration_number",
+            "ordinal_position"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_pesticides": {
+      "name": "agr_pesticides",
+      "schema": "",
+      "columns": {
+        "registration_number": {
+          "name": "registration_number",
+          "type": "varchar(10)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "raw_id": {
+          "name": "raw_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pesticide_type": {
+          "name": "pesticide_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "registrant_name": {
+          "name": "registrant_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usage_category": {
+          "name": "usage_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "formulation_type": {
+          "name": "formulation_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mixture_count": {
+          "name": "mixture_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registered_date": {
+          "name": "registered_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_agr_pesticides_name_trgm": {
+          "name": "idx_agr_pesticides_name_trgm",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_pests": {
+      "name": "agr_pests",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_agr_pests_name_trgm": {
+          "name": "idx_agr_pests_name_trgm",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "agr_pests_name_unique": {
+          "name": "agr_pests_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_usage_ingredient_limits": {
+      "name": "agr_usage_ingredient_limits",
+      "schema": "",
+      "columns": {
+        "usage_rule_id": {
+          "name": "usage_rule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordinal_position": {
+          "name": "ordinal_position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredient_id": {
+          "name": "ingredient_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "limit_text": {
+          "name": "limit_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_total_count": {
+          "name": "max_total_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_agr_usage_limits_ing_id": {
+          "name": "idx_agr_usage_limits_ing_id",
+          "columns": [
+            {
+              "expression": "ingredient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agr_usage_ingredient_limits_usage_rule_id_agr_usage_rules_id_fk": {
+          "name": "agr_usage_ingredient_limits_usage_rule_id_agr_usage_rules_id_fk",
+          "tableFrom": "agr_usage_ingredient_limits",
+          "tableTo": "agr_usage_rules",
+          "columnsFrom": [
+            "usage_rule_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "agr_usage_ingredient_limits_ingredient_id_agr_ingredients_id_fk": {
+          "name": "agr_usage_ingredient_limits_ingredient_id_agr_ingredients_id_fk",
+          "tableFrom": "agr_usage_ingredient_limits",
+          "tableTo": "agr_ingredients",
+          "columnsFrom": [
+            "ingredient_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "agr_usage_ingredient_limits_usage_rule_id_ordinal_position_pk": {
+          "name": "agr_usage_ingredient_limits_usage_rule_id_ordinal_position_pk",
+          "columns": [
+            "usage_rule_id",
+            "ordinal_position"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_usage_pests": {
+      "name": "agr_usage_pests",
+      "schema": "",
+      "columns": {
+        "usage_rule_id": {
+          "name": "usage_rule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pest_id": {
+          "name": "pest_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "condition_note": {
+          "name": "condition_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        }
+      },
+      "indexes": {
+        "idx_agr_usage_pests_pest_id": {
+          "name": "idx_agr_usage_pests_pest_id",
+          "columns": [
+            {
+              "expression": "pest_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agr_usage_pests_usage_rule_id_agr_usage_rules_id_fk": {
+          "name": "agr_usage_pests_usage_rule_id_agr_usage_rules_id_fk",
+          "tableFrom": "agr_usage_pests",
+          "tableTo": "agr_usage_rules",
+          "columnsFrom": [
+            "usage_rule_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "agr_usage_pests_pest_id_agr_pests_id_fk": {
+          "name": "agr_usage_pests_pest_id_agr_pests_id_fk",
+          "tableFrom": "agr_usage_pests",
+          "tableTo": "agr_pests",
+          "columnsFrom": [
+            "pest_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "agr_usage_pests_usage_rule_id_pest_id_condition_note_pk": {
+          "name": "agr_usage_pests_usage_rule_id_pest_id_condition_note_pk",
+          "columns": [
+            "usage_rule_id",
+            "pest_id",
+            "condition_note"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_usage_rules": {
+      "name": "agr_usage_rules",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "registration_number": {
+          "name": "registration_number",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crop_id": {
+          "name": "crop_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_crop_name": {
+          "name": "raw_crop_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "crop_condition": {
+          "name": "crop_condition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "excluded_crop_names": {
+          "name": "excluded_crop_names",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "excluded_crop_ids": {
+          "name": "excluded_crop_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "application_place": {
+          "name": "application_place",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "application_method": {
+          "name": "application_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dilution_text": {
+          "name": "dilution_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dilution_min": {
+          "name": "dilution_min",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dilution_max": {
+          "name": "dilution_max",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dilution_unit": {
+          "name": "dilution_unit",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "liquid_amount": {
+          "name": "liquid_amount",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usage_timing_text": {
+          "name": "usage_timing_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phi_days": {
+          "name": "phi_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_applications_text": {
+          "name": "max_applications_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_applications_count": {
+          "name": "max_applications_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fumigation_time": {
+          "name": "fumigation_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fumigation_temperature": {
+          "name": "fumigation_temperature",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "soil_type": {
+          "name": "soil_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "zone_name": {
+          "name": "zone_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "applied_pesticide_name": {
+          "name": "applied_pesticide_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_agr_usage_rules_crop_id": {
+          "name": "idx_agr_usage_rules_crop_id",
+          "columns": [
+            {
+              "expression": "crop_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_agr_usage_rules_reg_num": {
+          "name": "idx_agr_usage_rules_reg_num",
+          "columns": [
+            {
+              "expression": "registration_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agr_usage_rules_registration_number_agr_pesticides_registration_number_fk": {
+          "name": "agr_usage_rules_registration_number_agr_pesticides_registration_number_fk",
+          "tableFrom": "agr_usage_rules",
+          "tableTo": "agr_pesticides",
+          "columnsFrom": [
+            "registration_number"
+          ],
+          "columnsTo": [
+            "registration_number"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "agr_usage_rules_crop_id_agr_crops_id_fk": {
+          "name": "agr_usage_rules_crop_id_agr_crops_id_fk",
+          "tableFrom": "agr_usage_rules",
+          "tableTo": "agr_crops",
+          "columnsFrom": [
+            "crop_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_collection_jobs": {
+      "name": "agr_collection_jobs",
+      "schema": "",
+      "columns": {
+        "registration_number": {
+          "name": "registration_number",
+          "type": "varchar(10)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "priority": {
+          "name": "priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_run_at": {
+          "name": "last_run_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "next_run_at": {
+          "name": "next_run_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_stats": {
+          "name": "last_stats",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "locked_until": {
+          "name": "locked_until",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "page_finder_checked_at": {
+          "name": "page_finder_checked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_agr_collection_jobs_next": {
+          "name": "idx_agr_collection_jobs_next",
+          "columns": [
+            {
+              "expression": "priority",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "next_run_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agr_collection_jobs_registration_number_agr_pesticides_registration_number_fk": {
+          "name": "agr_collection_jobs_registration_number_agr_pesticides_registration_number_fk",
+          "tableFrom": "agr_collection_jobs",
+          "tableTo": "agr_pesticides",
+          "columnsFrom": [
+            "registration_number"
+          ],
+          "columnsTo": [
+            "registration_number"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_manufacturer_domains": {
+      "name": "agr_manufacturer_domains",
+      "schema": "",
+      "columns": {
+        "registrant_name": {
+          "name": "registrant_name",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "domains": {
+          "name": "domains",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_pesticide_documents": {
+      "name": "agr_pesticide_documents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "registration_number": {
+          "name": "registration_number",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'other'"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "page_url": {
+          "name": "page_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "page_count": {
+          "name": "page_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "byte_size": {
+          "name": "byte_size",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fetched_at": {
+          "name": "fetched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "verification_score": {
+          "name": "verification_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "verification_details": {
+          "name": "verification_details",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_note": {
+          "name": "review_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "uq_agr_documents_reg_sha": {
+          "name": "uq_agr_documents_reg_sha",
+          "columns": [
+            {
+              "expression": "registration_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sha256",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_agr_documents_status": {
+          "name": "idx_agr_documents_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agr_pesticide_documents_registration_number_agr_pesticides_registration_number_fk": {
+          "name": "agr_pesticide_documents_registration_number_agr_pesticides_registration_number_fk",
+          "tableFrom": "agr_pesticide_documents",
+          "tableTo": "agr_pesticides",
+          "columnsFrom": [
+            "registration_number"
+          ],
+          "columnsTo": [
+            "registration_number"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_pesticide_images": {
+      "name": "agr_pesticide_images",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "registration_number": {
+          "name": "registration_number",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alt_text": {
+          "name": "alt_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "page_url": {
+          "name": "page_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "byte_size": {
+          "name": "byte_size",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fetched_at": {
+          "name": "fetched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "verification_score": {
+          "name": "verification_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "verification_details": {
+          "name": "verification_details",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_note": {
+          "name": "review_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "uq_agr_images_reg_sha": {
+          "name": "uq_agr_images_reg_sha",
+          "columns": [
+            {
+              "expression": "registration_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sha256",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_agr_images_status": {
+          "name": "idx_agr_images_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agr_pesticide_images_registration_number_agr_pesticides_registration_number_fk": {
+          "name": "agr_pesticide_images_registration_number_agr_pesticides_registration_number_fk",
+          "tableFrom": "agr_pesticide_images",
+          "tableTo": "agr_pesticides",
+          "columnsFrom": [
+            "registration_number"
+          ],
+          "columnsTo": [
+            "registration_number"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.agr_pesticide_web_pages": {
+      "name": "agr_pesticide_web_pages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "registration_number": {
+          "name": "registration_number",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'search'"
+        },
+        "http_status": {
+          "name": "http_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_checked_at": {
+          "name": "last_checked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "verification_score": {
+          "name": "verification_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "verification_details": {
+          "name": "verification_details",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_note": {
+          "name": "review_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "uq_agr_web_pages_reg_url": {
+          "name": "uq_agr_web_pages_reg_url",
+          "columns": [
+            {
+              "expression": "registration_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "url",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_agr_web_pages_status": {
+          "name": "idx_agr_web_pages_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "agr_pesticide_web_pages_registration_number_agr_pesticides_registration_number_fk": {
+          "name": "agr_pesticide_web_pages_registration_number_agr_pesticides_registration_number_fk",
+          "tableFrom": "agr_pesticide_web_pages",
+          "tableTo": "agr_pesticides",
+          "columnsFrom": [
+            "registration_number"
+          ],
+          "columnsTo": [
+            "registration_number"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

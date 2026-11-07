@@ -1,0 +1,22 @@
+{
+  "name": "@pesticide/api-contract",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsup src/index.ts --format esm --dts --clean --external @hono/zod-openapi",
+    "openapi:types": "openapi-typescript ../../apps/api/openapi.json -o src/generated/openapi.d.ts"
+  },
+  "dependencies": {
+    "@hono/zod-openapi": "^1.6.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "tsup": "^8.5.0",
+    "typescript": "~5.9.3"
+  }
+}

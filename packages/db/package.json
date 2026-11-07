@@ -1,0 +1,33 @@
+{
+  "name": "@pesticide/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx scripts/seed.ts",
+    "famic:sync": "tsx scripts/famic-sync.ts"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.1",
+    "csv-parse": "^7.0.3",
+    "drizzle-orm": "^0.45.4",
+    "iconv-lite": "^0.7.3",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3"
+  }
+}

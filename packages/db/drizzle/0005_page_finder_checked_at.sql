@@ -1,0 +1,1 @@
+ALTER TABLE "agr_collection_jobs" ADD COLUMN "page_finder_checked_at" timestamp with time zone;

@@ -1,0 +1,33 @@
+{
+  "name": "@pesticide/collector",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./queue": "./src/queue.ts",
+    "./review": "./src/review.ts",
+    "./storage": "./src/storage.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "collect": "tsx scripts/collect.ts",
+    "collector:cron": "tsx scripts/collector-cron.ts"
+  },
+  "dependencies": {
+    "@pesticide/db": "workspace:*",
+    "cheerio": "^1.2.0",
+    "drizzle-orm": "^0.45.4",
+    "iconv-lite": "^0.7.3",
+    "image-size": "^2.1.0",
+    "node-cron": "^4.6.0",
+    "robots-parser": "^3.0.1",
+    "unpdf": "^2.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3"
+  }
+}

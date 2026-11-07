@@ -1,0 +1,11 @@
+# Cloudflare Tunnel 設定例（/etc/cloudflared/config.yml）
+#   cloudflared tunnel create pesticide-api
+#   cloudflared tunnel route dns pesticide-api api-agri.example.com
+#   sudo cloudflared service install
+tunnel: <TUNNEL_ID>
+credentials-file: /etc/cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: api-agri.example.com
+    service: http://127.0.0.1:8790
+  - service: http_status:404

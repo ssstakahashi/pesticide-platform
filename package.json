@@ -1,0 +1,28 @@
+{
+  "name": "pesticide-platform",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.28.10",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "pnpm --filter @pesticide/db db:generate",
+    "db:migrate": "pnpm --filter @pesticide/db db:migrate",
+    "db:seed": "pnpm --filter @pesticide/db db:seed",
+    "famic:sync": "pnpm --filter @pesticide/db famic:sync",
+    "collect": "pnpm --filter @pesticide/collector collect",
+    "format": "prettier --write .",
+    "deploy": "bash scripts/deploy.sh",
+    "openapi:generate": "pnpm --filter @pesticide/api openapi:generate && pnpm --filter @pesticide/api-contract openapi:types"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.10",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,17 @@
+# PostgreSQL を Docker で動かす場合（pg_trgm は公式イメージに同梱）
+#   docker compose -f infra/docker-compose.yml up -d
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pesticide
+      POSTGRES_PASSWORD: pesticide
+      POSTGRES_DB: pesticide_platform
+    ports:
+      - '127.0.0.1:5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

@@ -1,0 +1,2158 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pesticide Platform API",
+    "version": "0.1.0",
+    "description": "FAMIC 農薬登録情報にもとづく農薬検索・使用回数検証 API"
+  },
+  "components": {
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "APIキー、または Firebase Auth の ID トークン"
+      }
+    },
+    "schemas": {
+      "PesticideSearchResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PesticideSearchResult"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "items"
+        ]
+      },
+      "PesticideSearchResult": {
+        "type": "object",
+        "properties": {
+          "usage_rule_id": {
+            "type": "string"
+          },
+          "registration_number": {
+            "type": "string"
+          },
+          "pesticide_name": {
+            "type": "string"
+          },
+          "usage_category": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "formulation_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "registered_crop_name": {
+            "type": "string"
+          },
+          "crop_condition": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hierarchy_depth": {
+            "type": "integer",
+            "description": "0=検索した作物そのものへの登録, 1以上=上位分類（果菜類・野菜類など）への登録"
+          },
+          "target_pests": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dilution_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "liquid_amount": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "usage_timing_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phi_days": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "max_applications_count": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "application_method": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ingredient_limits_summary": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "usage_rule_id",
+          "registration_number",
+          "pesticide_name",
+          "usage_category",
+          "formulation_type",
+          "registered_crop_name",
+          "crop_condition",
+          "hierarchy_depth",
+          "target_pests",
+          "dilution_text",
+          "liquid_amount",
+          "usage_timing_text",
+          "phi_days",
+          "max_applications_count",
+          "application_method",
+          "ingredient_limits_summary"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "作物名(crop)を指定してください"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "SuggestResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuggestItem"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "SuggestItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "similarity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "similarity"
+        ]
+      },
+      "PesticideDetail": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pesticideType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "registrantName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "usageCategory": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "formulationType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mixtureCount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "registeredDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ordinalPosition": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "concentrationText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "totalCountGroupName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "racCode": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "ordinalPosition",
+                "name",
+                "concentrationText",
+                "totalCountGroupName",
+                "racCode"
+              ]
+            }
+          }
+        },
+        "required": [
+          "registrationNumber",
+          "name",
+          "pesticideType",
+          "registrantName",
+          "usageCategory",
+          "formulationType",
+          "mixtureCount",
+          "registeredDate",
+          "ingredients"
+        ]
+      },
+      "PesticideAssets": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string"
+          },
+          "webPages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PesticideWebPage"
+            }
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PesticideDocument"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PesticideImage"
+            }
+          }
+        },
+        "required": [
+          "registrationNumber",
+          "webPages",
+          "documents",
+          "images"
+        ],
+        "description": "採用済み（approved）の検証用データのみ"
+      },
+      "PesticideWebPage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "title"
+        ]
+      },
+      "PesticideDocument": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DocumentKind"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "pageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pageCount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "byteSize": {
+            "type": "integer"
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "署名付きのファイル取得パス（API のベースURLからの相対パス、一定時間で失効）",
+            "example": "/api/files/image/0abe77d1-ff87-4df8-a32d-2f05b2815da7?exp=1767225600&sig=..."
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "sourceUrl",
+          "pageUrl",
+          "pageCount",
+          "byteSize",
+          "fileUrl"
+        ]
+      },
+      "DocumentKind": {
+        "type": "string",
+        "enum": [
+          "spec_sheet",
+          "sds",
+          "label",
+          "other"
+        ],
+        "description": "spec_sheet=製品情報・技術資料, sds=安全データシート, label=ラベル, other=その他"
+      },
+      "PesticideImage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "altText": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "pageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "width": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "height": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "署名付きのファイル取得パス（API のベースURLからの相対パス、一定時間で失効）",
+            "example": "/api/files/image/0abe77d1-ff87-4df8-a32d-2f05b2815da7?exp=1767225600&sig=..."
+          }
+        },
+        "required": [
+          "id",
+          "altText",
+          "sourceUrl",
+          "pageUrl",
+          "width",
+          "height",
+          "fileUrl"
+        ]
+      },
+      "VerifyResponse": {
+        "type": "object",
+        "properties": {
+          "crop": {
+            "type": "string"
+          },
+          "unknownRegistrationNumbers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerifyPesticideResult"
+            }
+          }
+        },
+        "required": [
+          "crop",
+          "unknownRegistrationNumbers",
+          "items"
+        ]
+      },
+      "VerifyPesticideResult": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string"
+          },
+          "pesticideName": {
+            "type": "string"
+          },
+          "registeredForCrop": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/VerifyStatus"
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "maxCount": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "usedCount": {
+                "type": "integer"
+              },
+              "remaining": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "status": {
+                "$ref": "#/components/schemas/VerifyStatus"
+              }
+            },
+            "required": [
+              "maxCount",
+              "usedCount",
+              "remaining",
+              "status"
+            ],
+            "description": "本剤の使用回数"
+          },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerifyIngredientResult"
+            }
+          }
+        },
+        "required": [
+          "registrationNumber",
+          "pesticideName",
+          "registeredForCrop",
+          "status",
+          "product",
+          "ingredients"
+        ]
+      },
+      "VerifyStatus": {
+        "type": "string",
+        "enum": [
+          "not_registered",
+          "exceeded",
+          "last_one",
+          "available",
+          "no_limit"
+        ],
+        "description": "not_registered=対象作物に登録なし, exceeded=上限到達(使用不可), last_one=残り1回, available=使用可能, no_limit=回数制限なし"
+      },
+      "VerifyIngredientResult": {
+        "type": "object",
+        "properties": {
+          "maxCount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "usedCount": {
+            "type": "integer"
+          },
+          "remaining": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/VerifyStatus"
+          },
+          "ordinalPosition": {
+            "type": "integer"
+          },
+          "ingredientName": {
+            "type": "string"
+          },
+          "countGroupName": {
+            "type": "string"
+          },
+          "racCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "usedHistory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registrationNumber": {
+                  "type": "string"
+                },
+                "pesticideName": {
+                  "type": "string"
+                },
+                "sprayedDate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "registrationNumber",
+                "pesticideName",
+                "sprayedDate"
+              ]
+            }
+          }
+        },
+        "required": [
+          "maxCount",
+          "usedCount",
+          "remaining",
+          "status",
+          "ordinalPosition",
+          "ingredientName",
+          "countGroupName",
+          "racCode",
+          "usedHistory"
+        ]
+      },
+      "VerifyRequest": {
+        "type": "object",
+        "properties": {
+          "crop": {
+            "type": "string",
+            "minLength": 1,
+            "example": "すいか"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SprayHistoryItem"
+            },
+            "maxItems": 500,
+            "description": "同一作付け（または圃場）でこれまでに散布した農薬の履歴",
+            "example": [
+              {
+                "registrationNumber": "23623",
+                "sprayedDate": "2026-04-10"
+              },
+              {
+                "registrationNumber": "22583",
+                "sprayedDate": "2026-05-15"
+              }
+            ]
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^\\d{1,10}$",
+              "example": "22583"
+            },
+            "maxItems": 200,
+            "description": "次に使用を検討している農薬の登録番号。省略時は、作物に登録があり履歴と同じ成分または同じ製品を含む農薬を返す"
+          }
+        },
+        "required": [
+          "crop",
+          "history"
+        ]
+      },
+      "SprayHistoryItem": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string",
+            "pattern": "^\\d{1,10}$",
+            "example": "22583"
+          },
+          "sprayedDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-04-10"
+          }
+        },
+        "required": [
+          "registrationNumber",
+          "sprayedDate"
+        ]
+      },
+      "FileAssetType": {
+        "type": "string",
+        "enum": [
+          "document",
+          "image"
+        ]
+      },
+      "ReviewListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewItem"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ReviewItem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "id": {
+            "type": "string"
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "pesticideName": {
+            "type": "string"
+          },
+          "registrantName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "url": {
+            "type": "string",
+            "description": "ページURL、またはファイルの取得元URL"
+          },
+          "pageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DocumentKind"
+              },
+              {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            ]
+          },
+          "width": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "height": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "verificationScore": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "verificationDetails": {
+            "$ref": "#/components/schemas/VerificationDetails"
+          },
+          "reviewedBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reviewNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "fileUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "署名付きのファイル取得パス（API のベースURLからの相対パス、一定時間で失効）",
+            "example": "/api/files/image/0abe77d1-ff87-4df8-a32d-2f05b2815da7?exp=1767225600&sig=..."
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "registrationNumber",
+          "pesticideName",
+          "registrantName",
+          "status",
+          "url",
+          "pageUrl",
+          "title",
+          "kind",
+          "width",
+          "height",
+          "verificationScore",
+          "verificationDetails",
+          "reviewedBy",
+          "reviewNote",
+          "createdAt",
+          "fileUrl"
+        ]
+      },
+      "AssetType": {
+        "type": "string",
+        "enum": [
+          "web_page",
+          "document",
+          "image"
+        ]
+      },
+      "ReviewStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "rejected"
+        ],
+        "description": "pending=要確認, approved=採用（自動または人による承認）, rejected=却下"
+      },
+      "VerificationDetails": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "score": {
+            "type": "number"
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "passed": {
+                  "type": "boolean"
+                },
+                "weight": {
+                  "type": "number"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "passed",
+                "weight"
+              ]
+            }
+          },
+          "autoApproved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "score",
+          "checks",
+          "autoApproved"
+        ]
+      },
+      "ReviewActionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          }
+        },
+        "required": [
+          "id",
+          "registrationNumber",
+          "status"
+        ]
+      },
+      "ReviewActionRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "action"
+        ]
+      },
+      "CandidateUrlRequest": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string",
+            "pattern": "^\\d{1,10}$",
+            "example": "22583"
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2000,
+            "format": "uri",
+            "example": "https://www.nippon-soda.co.jp/nougyo/product/3963/"
+          }
+        },
+        "required": [
+          "registrationNumber",
+          "url"
+        ]
+      },
+      "EnqueueJobRequest": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string",
+            "pattern": "^\\d{1,10}$",
+            "example": "22583"
+          }
+        },
+        "required": [
+          "registrationNumber"
+        ]
+      },
+      "ManufacturerDomains": {
+        "type": "object",
+        "properties": {
+          "registrantName": {
+            "type": "string"
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "registrantName",
+          "domains"
+        ]
+      },
+      "ManufacturerDomainsRequest": {
+        "type": "object",
+        "properties": {
+          "registrantName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "日本曹達株式会社"
+          },
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253
+            },
+            "maxItems": 20,
+            "example": [
+              "nippon-soda.co.jp"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "registrantName",
+          "domains"
+        ]
+      },
+      "CollectionStats": {
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "$ref": "#/components/schemas/AssetType"
+                },
+                "status": {
+                  "$ref": "#/components/schemas/ReviewStatus"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "type",
+                "status",
+                "count"
+              ]
+            }
+          },
+          "jobs": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "due": {
+                "type": "integer"
+              },
+              "failing": {
+                "type": "integer"
+              },
+              "lastRunAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "total",
+              "due",
+              "failing",
+              "lastRunAt"
+            ]
+          }
+        },
+        "required": [
+          "assets",
+          "jobs"
+        ]
+      },
+      "UnverifiedPesticidesResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnverifiedPesticide"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "description": "公式ページが1件もなく、探索 bot も未確認の農薬。登録番号の昇順"
+      },
+      "UnverifiedPesticide": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "registrantName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "formulationType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "registrationNumber",
+          "name",
+          "registrantName",
+          "formulationType"
+        ]
+      },
+      "MarkPageFinderCheckedResponse": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string"
+          },
+          "checked": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "registrationNumber",
+          "checked"
+        ]
+      },
+      "MarkPageFinderCheckedRequest": {
+        "type": "object",
+        "properties": {
+          "registrationNumber": {
+            "type": "string",
+            "pattern": "^\\d{1,10}$",
+            "example": "22583"
+          }
+        },
+        "required": [
+          "registrationNumber"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/pesticides/search": {
+      "get": {
+        "tags": [
+          "pesticides"
+        ],
+        "summary": "作物・病害虫・用途から適用可能な農薬を検索（上位分類の登録も含む）",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "example": "すいか"
+            },
+            "required": true,
+            "name": "crop",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "アブラムシ"
+            },
+            "required": false,
+            "name": "pest",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "example": "殺虫"
+            },
+            "required": false,
+            "name": "category",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "検索結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PesticideSearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pesticides/suggest": {
+      "get": {
+        "tags": [
+          "pesticides"
+        ],
+        "summary": "農薬名のあいまい検索（pg_trgm によるインクリメンタルサーチ）",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50,
+              "example": "ダコニール"
+            },
+            "required": true,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "example": 10
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "候補一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pesticides/{registrationNumber}": {
+      "get": {
+        "tags": [
+          "pesticides"
+        ],
+        "summary": "登録番号から農薬の基本情報と有効成分を取得",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{1,10}$",
+              "example": "22583"
+            },
+            "required": true,
+            "name": "registrationNumber",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "農薬詳細",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PesticideDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pesticides/{registrationNumber}/assets": {
+      "get": {
+        "tags": [
+          "pesticides"
+        ],
+        "summary": "採用済みの検証用データ（製造会社の公式ページ・PDF資料・商品画像）を取得",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{1,10}$",
+              "example": "22583"
+            },
+            "required": true,
+            "name": "registrationNumber",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "検証用データ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PesticideAssets"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/crops/suggest": {
+      "get": {
+        "tags": [
+          "crops"
+        ],
+        "summary": "作物名のあいまい検索（別名・ひらがな/カタカナ表記ゆれ対応）",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50,
+              "example": "ダコニール"
+            },
+            "required": true,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "example": 10
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "候補一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pests/suggest": {
+      "get": {
+        "tags": [
+          "pests"
+        ],
+        "summary": "病害虫・雑草名のあいまい検索",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50,
+              "example": "ダコニール"
+            },
+            "required": true,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "example": 10
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "候補一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/verify": {
+      "post": {
+        "tags": [
+          "verify"
+        ],
+        "summary": "散布履歴から「本剤」「有効成分ごと」の残り使用回数を判定",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "判定結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/files/{type}/{id}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "保存済みの PDF・画像を取得（署名付きURLのみ有効）",
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/FileAssetType"
+            },
+            "required": true,
+            "name": "type",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "required": false,
+            "name": "exp",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            "required": true,
+            "name": "sig",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ファイル本体",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "署名が不正、または期限切れ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/collection/review": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "収集データのレビュー一覧（既定は要確認のみ、スコアの高い順）",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "$ref": "#/components/schemas/ReviewStatus"
+            },
+            "required": false,
+            "description": "pending=要確認, approved=採用（自動または人による承認）, rejected=却下",
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "$ref": "#/components/schemas/AssetType"
+            },
+            "required": false,
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{1,10}$",
+              "example": "22583"
+            },
+            "required": false,
+            "name": "registrationNumber",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "レビュー対象",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "収集データを承認・却下（公式ページの承認時は製造会社の公式ドメインとして学習）",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/collection/candidates": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "公式ページの候補URLを登録し、次回の bot 実行で優先的に検証させる",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登録したURL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/collection/jobs": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "指定した農薬の収集を次回の bot 実行で最優先にする",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnqueueJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登録結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "registrationNumber": {
+                      "type": "string"
+                    },
+                    "queued": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "registrationNumber",
+                    "queued"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/collection/domains": {
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "製造会社（登録者）の公式ドメインを設定（自動検証の基準になる）",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDomainsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "設定結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturerDomains"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/collection/stats": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "収集状況の集計",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "集計",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectionStats"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/collection/unverified": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "公式ページの検証が始まっていない農薬を登録番号順に取得",
+        "description": "公式ページが1件もなく、探索 bot が未確認の農薬だけを登録番号の昇順で返す。採用済み・確認待ち・却下済みのページがある農薬、および探索済みの農薬は含まない。",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 20,
+              "description": "1回に返す件数。最大20"
+            },
+            "required": false,
+            "description": "1回に返す件数。最大20",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "未検証の農薬",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnverifiedPesticidesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/collection/unverified/checked": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "候補URLが無かった農薬を探索済みにする",
+        "description": "次回の未検証一覧から外す。候補URLを登録できた農薬には使わない。",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkPageFinderCheckedRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "記録結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkPageFinderCheckedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入力エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "該当なし",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}
